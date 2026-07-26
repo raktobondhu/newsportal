@@ -60,6 +60,10 @@ async function fetchFromSupabase() {
   const url =
     `${SUPABASE_URL}/rest/v1/articles` +
     `?select=slug,headline,summary,body,category,tags,is_opinion,source_name,source_url,also_in,image_url,card_url,card_style,published_at` +
+    // অ্যাডমিন প্যানেল থেকে লুকানো খবর সাইটে দেখানো যাবে না।
+    // RLS পলিসিও এটা আটকায়, কিন্তু এখানে স্পষ্ট করে রাখলে service key
+    // দিয়ে পড়লেও (লোকাল ডেভেলপমেন্টে) একই আচরণ থাকে।
+    `&hidden=eq.false` +
     `&order=published_at.desc&limit=500`;
 
   const res = await fetch(url, {
@@ -132,7 +136,7 @@ export async function getArticle(slug) {
       const url =
         `${SUPABASE_URL}/rest/v1/articles` +
         `?select=slug,headline,summary,body,category,tags,is_opinion,source_name,source_url,also_in,image_url,card_url,card_style,published_at` +
-        `&slug=eq.${encodeURIComponent(want)}&limit=1`;
+        `&slug=eq.${encodeURIComponent(want)}&hidden=eq.false&limit=1`;
 
       const res = await fetch(url, {
         headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },

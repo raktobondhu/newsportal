@@ -1,10 +1,15 @@
 import './globals.css';
-import { getCategories } from '../lib/articles.js';
 
-// নাহলে হেডারের ক্যাটাগরি তালিকা বিল্ডের সময়েই জমে যায়, নতুন
-// ক্যাটাগরি এলে আর দেখা যায় না।
-export const revalidate = 300;
-
+/**
+ * সর্বোচ্চ স্তরের লেআউট — কেবল html/body আর সাধারণ স্টাইল।
+ *
+ * সাইটের হেডার-ফুটার ইচ্ছাকৃতভাবে এখানে নেই। আগে ছিল, ফলে
+ * /admin এর পাতাগুলোও সাইটের মেনুর নিচে বসত — অ্যাডমিন লগইন
+ * পাতার উপরে "সর্বশেষ, জাতীয়, রাজনীতি…" দেখা যেত।
+ *
+ * Next.js-এ রুট লেআউট এড়ানো যায় না, তাই সাইটের খোলসটা সরিয়ে
+ * (site)/layout.js এ নেওয়া হয়েছে; অ্যাডমিন তার নিজের খোলস আঁকে।
+ */
 export const metadata = {
   metadataBase: process.env.SITE_URL ? new URL(process.env.SITE_URL) : undefined,
   title: {
@@ -19,38 +24,10 @@ export const metadata = {
   },
 };
 
-export default async function RootLayout({ children }) {
-  const categories = (await getCategories()).slice(0, 8);
-
+export default function RootLayout({ children }) {
   return (
     <html lang="bn">
-      <body>
-        <header className="site-header">
-          <div className="wrap header-row">
-            <a className="logo" href="/" aria-label="কথা ম্যাট্রিক্স">
-              {/* next/image নয় — SVG-তে অপ্টিমাইজেশনের কিছু নেই */}
-              <img src="/logo.svg" alt="কথা ম্যাট্রিক্স" />
-            </a>
-            <nav className="nav">
-              <a href="/">সর্বশেষ</a>
-              {categories.map((c) => (
-                <a key={c.name} href={`/category/${encodeURIComponent(c.name)}`}>
-                  {c.name}
-                </a>
-              ))}
-            </nav>
-          </div>
-        </header>
-
-        <main className="wrap">{children}</main>
-
-        <footer className="site-footer">
-          <div className="wrap">
-            <span>© {new Date().getFullYear()} কথা ম্যাট্রিক্স</span>
-            <span>সব সংবাদ আমাদের নিজস্ব সম্পাদনায় বাংলায় প্রকাশিত।</span>
-          </div>
-        </footer>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

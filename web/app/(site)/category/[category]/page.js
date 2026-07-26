@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getCategories, getByCategory, relativeTime, thumbFor } from '../../../lib/articles.js';
+import { getCategories, getByCategory, relativeTime, thumbFor } from '../../../../lib/articles.js';
 
 export const revalidate = 300;
 // নতুন ক্যাটাগরি প্রথমবার এলেও পেজটা যেন খোলে

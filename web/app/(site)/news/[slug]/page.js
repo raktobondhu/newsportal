@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getAllArticles, getArticle, formatDate, thumbFor } from '../../../lib/articles.js';
+import { getAllArticles, getArticle, formatDate, thumbFor } from '../../../../lib/articles.js';
 
 // Next.js কেবল রুট সেগমেন্ট ফাইলেই এগুলো খোঁজে।
 export const revalidate = 300;

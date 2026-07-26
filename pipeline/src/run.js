@@ -1,12 +1,13 @@
 import path from 'node:path';
 import { config } from './config.js';
 import { log, sleep, tokenOverlap } from './util.js';
-import { fetchAllFeeds } from './sources.js';
+import { fetchAllFeeds, SOURCES } from './sources.js';
 import { safeExtract, isUnsuitableUrl } from './extract.js';
 import { rewriteArticle } from './rewrite.js';
 import { dedupe, rankItems, decideCardStyle, summarizeRanking, DEDUPE_THRESHOLD } from './score.js';
 import { renderCard } from './card.js';
 import { buildCaption, postPhoto, postComment, describeFacebookError, isFatalFacebookError } from './facebook.js';
+import { fetchSettings } from './supabase.js';
 import { loadState, saveState, saveArticle, buildSlug, articleExists, writeIndex, markSeen, markHeadline, markArticlePosted, pruneOldState } from './store.js';
 
 const args = new Set(process.argv.slice(2));
@@ -48,11 +49,36 @@ async function main() {
     log('warn', 'SITE_URL সেট নেই — কমেন্টে লিংক যাবে না (dry-run, তাই থামছি না)');
   }
 
+  /**
+   * অ্যাডমিন প্যানেলের সেটিংস আগে পড়ি। থামানোর সুইচ এখানেই —
+   * GitHub-এ workflow disable করার চেয়ে এটা অনেক দ্রুত, আর যিনি
+   * কোড চেনেন না তিনিও পারবেন।
+   */
+  const settings = await fetchSettings();
+
+  if (settings.automation_enabled === false) {
+    log('done', 'অ্যাডমিন প্যানেল থেকে অটোমেশন বন্ধ করা আছে — কিছু করা হলো না।');
+    return;
+  }
+
+  const facebookDisabledBySetting = settings.facebook_enabled === false;
+  if (facebookDisabledBySetting && !SKIP_FACEBOOK) {
+    log('facebook', 'প্যানেল থেকে ফেসবুক প্রকাশ বন্ধ — খবর কেবল সাইটে যাবে');
+  }
+
+  const maxArticles = Number(settings.max_articles_per_run ?? MAX_ARTICLES) || MAX_ARTICLES;
+  const maxPosts = facebookDisabledBySetting ? 0 : Number(settings.max_posts_per_run ?? MAX_POSTS) || MAX_POSTS;
+
   const state = await loadState();
   log('state', `আগে দেখা হয়েছে ${state.seen.size} টি লিংক`);
 
-  // ১. সংগ্রহ
-  const raw = await fetchAllFeeds();
+  // ১. সংগ্রহ — প্যানেল থেকে বন্ধ করা সোর্স বাদ দিয়ে
+  const disabledSources = Array.isArray(settings.disabled_sources) ? settings.disabled_sources : [];
+  const activeSources = SOURCES.filter((s) => !disabledSources.includes(s.id));
+  if (disabledSources.length) {
+    log('rss', `প্যানেল থেকে বন্ধ: ${disabledSources.join(', ')}`);
+  }
+  const raw = await fetchAllFeeds(activeSources);
 
   // ২. ছাঁটাই — ভিডিও/গ্যালারি পেজ আর আগে প্রকাশিত খবর বাদ
   const fresh = raw.filter((i) => !isUnsuitableUrl(i.link) && !state.seen.has(i.link));
@@ -67,7 +93,7 @@ async function main() {
   log('dedupe', `${fresh.length} → ${unique.length} টি আলাদা খবর`);
 
   const ranked = rankItems(unique);
-  const selected = ranked.slice(0, MAX_ARTICLES);
+  const selected = ranked.slice(0, maxArticles);
   summarizeRanking(ranked, Math.min(10, selected.length));
 
   // ৪. প্রতিটি খবর প্রক্রিয়াকরণ
@@ -203,7 +229,7 @@ async function main() {
       console.log('─'.repeat(60) + '\n');
     }
   } else {
-    const toPost = produced.slice(0, MAX_POSTS);
+    const toPost = produced.slice(0, maxPosts);
     let posted = 0;
     for (const [i, article] of toPost.entries()) {
       try {

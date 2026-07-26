@@ -1,4 +1,4 @@
-import { getAllArticles, relativeTime, thumbFor } from '../lib/articles.js';
+import { getAllArticles, relativeTime, thumbFor } from '../../lib/articles.js';
 
 // Next.js কেবল রুট সেগমেন্ট ফাইলেই revalidate খোঁজে — lib থেকে রপ্তানি
 // করলে নীরবে উপেক্ষা করে, আর পেজ চিরস্থায়ীভাবে স্ট্যাটিক থেকে যায়।

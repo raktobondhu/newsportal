@@ -141,6 +141,25 @@ export async function markPostedToFacebook(slug, postId) {
   });
 }
 
+/**
+ * অ্যাডমিন প্যানেলের সেটিংস। পাইপলাইন প্রতিবার শুরুতে পড়ে নেয়, তাই
+ * GitHub-এ না গিয়েও প্যানেল থেকে অটোমেশন থামানো যায়।
+ *
+ * টেবিলটা না থাকলে (পুরোনো ইনস্টল) খালি অবজেক্ট — তাতে সব ডিফল্ট
+ * আচরণই বহাল থাকে, পাইপলাইন থেমে যায় না।
+ */
+export async function fetchSettings() {
+  try {
+    const rows = await rest('app_settings', { query: '?select=key,value' });
+    const out = {};
+    for (const r of rows ?? []) out[r.key] = r.value;
+    return out;
+  } catch (err) {
+    log('state', `সেটিংস পড়া গেল না (${err.message.slice(0, 60)}) — ডিফল্ট ব্যবহার করছি`);
+    return {};
+  }
+}
+
 /** টেবিল আছে কিনা — স্কিমা না চালিয়ে পাইপলাইন চালালে বোধগম্য বার্তা দিতে */
 export async function checkSchema() {
   try {
