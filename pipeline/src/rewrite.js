@@ -301,13 +301,29 @@ export async function rewriteArticle(item, { retries = 2 } = {}) {
           throw err;
         }
         const headline = String(parsed.headline).trim();
+
+        /**
+         * আকর্ষণীয় শিরোনাম কেবল প্রধান প্রোভাইডার (Gemini) থেকেই নিই।
+         *
+         * কারণ বাস্তবে দেখা: qwen একটি মৃত্যুর খবরে লিখেছিল
+         * "স্বামী ডুবে মরতে গেলেন স্ত্রী, খালে তলিয়ে গেল নববধূ" — বাক্যগঠন
+         * এলোমেলো, স্বামীর মৃত্যুর কথাই বাদ। আগে একই মডেল দাবানলকে
+         * "বন্যা"ও লিখেছে।
+         *
+         * শব্দভাণ্ডার মিলিয়ে এটা ধরা যায় না — শব্দগুলো তো ঠিকই আছে,
+         * বিন্যাসটাই ভুল। তাই স্বয়ংক্রিয় পরীক্ষা নয়, নিয়মই বদলালাম:
+         * ব্যাকআপ মডেলে চললে ফেসবুকেও নিরপেক্ষ শিরোনামটাই যাক।
+         * কম আকর্ষণীয় হোক, ভুল হওয়ার চেয়ে ঢের ভালো।
+         */
+        const trustSocial = provider === 'gemini';
+
         return {
           headline,
           // মডেল মাঝে মাঝে বাড়তি ফিল্ডটা বাদ দেয়। তখন নিরপেক্ষ শিরোনামই
           // ফেসবুকে যাক — শিরোনামহীন পোস্টের চেয়ে সেটা অনেক ভালো।
           // দৈর্ঘ্যও এখানেই সামলাই: প্রম্পটে ৬৫ অক্ষর বলা থাকলেও মডেল
           // নিয়মিত ছাড়িয়ে যায়, আর লম্বা শিরোনাম ফিডে কেটে যায়।
-          socialHeadline: capSocialHeadline(String(parsed.socialHeadline ?? '').trim(), headline),
+          socialHeadline: capSocialHeadline(trustSocial ? String(parsed.socialHeadline ?? '').trim() : '', headline),
           summary: String(parsed.summary ?? '').trim(),
           body: String(parsed.body).trim(),
           category: CATEGORIES.includes(parsed.category) ? parsed.category : 'জাতীয়',

@@ -107,42 +107,52 @@ export function imageDimensions(buf) {
 }
 
 /**
- * কার্ড ১০৮০x১০৮০। ছবি cover করে বসে, তাই ছোট দিকটা ১০৮০-এর কম হলে
- * টেনে বড় করতে হয় এবং ছবি ঘোলা দেখায় — ঠিক যেটাকে "স্ক্রিনশটের মতো"
- * মনে হয়।
+ * ছবির মাপ অনুযায়ী কার্ডের ধরন — তিন স্তর।
  *
- * সীমাটা অনুমানে নয়, মেপে বসানো। সোর্সগুলো আসলে যা দেয়:
- *   প্রথম আলো   : ৮৩৯, ৮৪০, ৮৪০, ৪০৪   (অনুপাত ~১.৯:১, তাই ১৬০০ চওড়া হলেও উচ্চতা ৮৪০)
- *   বিবিসি বাংলা : ১২৭৭, ১০৮০, ১০৮০, ১০৮০
- *   Al Jazeera  : ১৪৪০, ৬৩০, ১৪৪০, ১০৮০
+ * কার্ড ১০৮০x১০৮০ বর্গাকার, সোর্সের ছবি সাধারণত ১৬:৯। তাই:
  *
- * ৮০০ রাখলে ৮৩৯/৮৪০ পাস করে (১.২৯x টান — চোখে ধরা পড়ে না), আর
- * ৬৩০/৪০৪ বাদ পড়ে (১.৭x–২.৭x টান — স্পষ্ট ঘোলা)।
+ *  photo (পূর্ণ)  ছোটদিক ≥ ৮০০ — ছবি পুরো বর্গ ভরে। সবচেয়ে নাটকীয়,
+ *                 কিন্তু ৮০০-এর কম হলে ১.৪x+ টানতে হয় এবং ঘোলা দেখায়।
+ *  band          ছোটদিক ≥ ৪০০ — ছবি উপরে ১৬:৯ ব্যান্ডে, নিচে লেখা।
+ *                 এখানে ১০৮০ চওড়ায় বসাতে ছবিকে বরং ছোট করতে হয়,
+ *                 তাই ১২০০x৬৩০ og:image-ও একদম ঝকঝকে থাকে।
+ *  text          এর চেয়ে ছোট — ছবি বাদ।
  *
- * আগে ৮৬৪ ছিল, যা প্রথম আলোর ৮৪০-এর সামান্য উপরে — ফলে দেশের সবচেয়ে
- * বড় সোর্সের একটি ছবিও কার্ডে উঠত না, পুরো জাতীয় বিভাগ টেক্সট কার্ড
- * হয়ে যেত।
+ * সীমাগুলো মেপে বসানো। সোর্সরা বাস্তবে যা দেয়:
+ *   প্রথম আলো   : ৮৪০, ৬৩০, ৫৭০, ৫১৫, ১৫৮  (একই সোর্সে বিশাল তারতম্য)
+ *   বিবিসি      : ১২৭৭, ১০৮০, ১০৮০
+ *   Al Jazeera : ১৪৪০, ১০৮০, ৬৩০
+ *
+ * শুধু পূর্ণ-কার্ড রাখলে ৫টার ৪টাই টেক্সট হয়ে যেত।
  */
-const MIN_IMAGE_SHORT_SIDE = 800;
+const FULL_BLEED_MIN_SHORT_SIDE = 800;
+const BAND_MIN_SHORT_SIDE = 400;
+
+export function pickImageStyle(dim) {
+  if (!dim) return 'photo'; // মাপ পড়া না গেলে আগের আচরণই থাক
+  const shortSide = Math.min(dim.width, dim.height);
+  if (shortSide >= FULL_BLEED_MIN_SHORT_SIDE) return 'photo';
+  if (shortSide >= BAND_MIN_SHORT_SIDE) return 'band';
+  return 'text';
+}
 
 async function fetchImage(url) {
   try {
     const { buffer, contentType } = await httpGet(url, { asBuffer: true });
     if (buffer.length < 3000) return null; // ট্র্যাকিং পিক্সেল/প্লেসহোল্ডার
 
-    const dim = imageDimensions(buffer);
-    if (dim) {
-      const shortSide = Math.min(dim.width, dim.height);
-      if (shortSide < MIN_IMAGE_SHORT_SIDE) {
-        log('card', `ছবি ছোট (${dim.width}x${dim.height}) — টেক্সট কার্ড হবে`);
-        return null;
-      }
+    const dimensions = imageDimensions(buffer);
+    const style = pickImageStyle(dimensions);
+    if (style === 'text') {
+      log('card', `ছবি খুব ছোট (${dimensions.width}x${dimensions.height}) — টেক্সট কার্ড হবে`);
+      return null;
     }
+
     let ct = (contentType || '').split(';')[0].trim();
     if (!ct.startsWith('image/')) {
       ct = /\.png(\?|$)/i.test(url) ? 'image/png' : /\.webp(\?|$)/i.test(url) ? 'image/webp' : 'image/jpeg';
     }
-    return { buffer, contentType: ct, dataUri: `data:${ct};base64,${buffer.toString('base64')}` };
+    return { buffer, contentType: ct, dataUri: `data:${ct};base64,${buffer.toString('base64')}`, dimensions, style };
   } catch (err) {
     log('card', `ছবি নামানো গেল না — ${err.message}`);
     return null;
@@ -192,17 +202,25 @@ function runBrowser(args, { timeout = 60000 } = {}) {
 }
 
 /**
- * @returns {Promise<{file:string, style:'photo'|'text'}>}
+ * @returns {Promise<{file:string, style:'photo'|'band'|'text', imageWebPath:string|null, imageFile:string|null}>}
  */
+const TEMPLATE_BY_STYLE = {
+  photo: 'card-photo.html',
+  band: 'card-band.html',
+  text: 'card-text.html',
+};
+
 export async function renderCard({ headline, category = 'সংবাদ', source = '', imageUrl = '', outFile, forceStyle = null, slug = null }) {
   // ছবি একবারই নামাই — কার্ডে বসানো আর সাইটের জন্য সেভ করা, দুটোতেই একই বাইট
   const image = imageUrl ? await fetchImage(imageUrl) : null;
   const saved = image && slug ? await saveOriginal(image, slug) : null;
 
-  const dataUri = forceStyle === 'text' ? null : (image?.dataUri ?? null);
-  const style = dataUri ? 'photo' : 'text';
+  // forceStyle আসে score.js-এর নিয়ম থেকে (মতামত, সংক্ষিপ্ত খবর ইত্যাদি)।
+  // ছবি থাকলে ধরনটা ছবির মাপই ঠিক করে — fetchImage সেটা বলে দেয়।
+  const style = forceStyle === 'text' || !image ? 'text' : image.style;
+  const dataUri = style === 'text' ? null : image.dataUri;
 
-  const tplFile = path.join(config.paths.templates, style === 'photo' ? 'card-photo.html' : 'card-text.html');
+  const tplFile = path.join(config.paths.templates, TEMPLATE_BY_STYLE[style]);
   let html = await fsp.readFile(tplFile, 'utf8');
 
   const repl = {
