@@ -82,23 +82,16 @@ export default async function ArticlesPage({ searchParams }) {
             <table className="tbl">
               <thead>
                 <tr>
-                  <th style={{ width: 88 }}></th>
                   <th>শিরোনাম</th>
                   <th style={{ width: 106 }}>বিভাগ</th>
+                  <th style={{ width: 84 }}>ছবি</th>
                   <th style={{ width: 128 }}>অবস্থা</th>
-                  <th style={{ width: 300 }}></th>
+                  <th style={{ width: 300 }}>কাজ</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((a) => (
                   <tr key={a.slug} className={a.hidden ? 'dim' : undefined}>
-                    <td>
-                      {a.image_url || a.card_url ? (
-                        <img className="thumb" src={a.image_url || a.card_url} alt="" />
-                      ) : (
-                        <div className="thumb" />
-                      )}
-                    </td>
                     <td>
                       <a className="title" href={`/admin/articles/${encodeURIComponent(a.slug)}`}>
                         {a.headline}
@@ -109,7 +102,14 @@ export default async function ArticlesPage({ searchParams }) {
                     </td>
                     <td>{a.category}</td>
                     <td>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'flex-end' }}>
+                      {a.image_url || a.card_url ? (
+                        <img className="thumb" src={a.image_url || a.card_url} alt="" />
+                      ) : (
+                        <div className="thumb" />
+                      )}
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'flex-start' }}>
                         <span className={`badge ${a.hidden ? 'stop' : 'ok'}`}>
                           {a.hidden ? '■ লুকানো' : '● প্রকাশিত'}
                         </span>

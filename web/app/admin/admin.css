@@ -46,7 +46,7 @@
 .adm-side {
   width: 248px; flex: none;
   background: var(--surface);
-  border-left: 1px solid var(--line);
+  border-right: 1px solid var(--line);
   display: flex; flex-direction: column;
   position: sticky; top: 0; height: 100vh;
 }
@@ -88,7 +88,7 @@
 .adm-status .dot.on { background: var(--ok); box-shadow: 0 0 0 3px #3fb95026; }
 .adm-status .dot.off { background: var(--stop); box-shadow: 0 0 0 3px #f8514926; }
 .adm-status .lbl { color: var(--ink-3); }
-.adm-status .val { margin-right: auto; }
+.adm-status .val { margin-left: auto; }
 
 .adm-me {
   padding: 14px 16px; border-top: 1px solid var(--line-soft);
@@ -117,7 +117,7 @@
 }
 .adm-head h1 { font-size: 1.22rem; margin: 0; font-weight: 600; }
 .adm-head .sub { color: var(--ink-3); font-size: .88rem; }
-.adm-head .right { margin-right: auto; display: flex; gap: 9px; align-items: center; }
+.adm-head .right { margin-left: auto; display: flex; gap: 9px; align-items: center; }
 
 .adm-body { padding: 26px 30px 70px; max-width: 1240px; }
 
@@ -171,13 +171,13 @@
    ================================================================ */
 .tbl { width: 100%; border-collapse: separate; border-spacing: 0; }
 .tbl th {
-  text-align: right; padding: 10px 14px; font-weight: 500;
+  text-align: left; padding: 10px 14px; font-weight: 500;
   color: var(--ink-3); font-size: .84rem;
   border-bottom: 1px solid var(--line);
 }
 .tbl td {
   padding: 13px 14px; border-bottom: 1px solid var(--line-soft);
-  font-size: .93rem; text-align: right; vertical-align: middle;
+  font-size: .93rem; text-align: left; vertical-align: middle;
 }
 .tbl tr:hover td { background: var(--surface); }
 .tbl tr.dim td { opacity: .42; }
@@ -195,8 +195,8 @@
   background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--r-lg); overflow: hidden;
 }
-.panel > .tbl th:first-child, .panel > .tbl td:first-child { padding-right: 20px; }
-.panel > .tbl th:last-child, .panel > .tbl td:last-child { padding-left: 20px; }
+.panel > .tbl th:first-child, .panel > .tbl td:first-child { padding-left: 20px; }
+.panel > .tbl th:last-child, .panel > .tbl td:last-child { padding-right: 20px; }
 
 /* ================================================================
    ব্যাজ — অবস্থা বোঝাতে রঙের সঙ্গে সবসময় লেখা থাকে
@@ -232,7 +232,7 @@
 .btn svg { width: 14px; height: 14px; }
 /* কাজের বোতামগুলো এক সারিতেই রাখি — ভেঙে দ্বিতীয় লাইনে গেলে সারির
    উচ্চতা এলোমেলো হয় আর তালিকা পড়তে অসুবিধা হয় */
-.row-btns { display: flex; gap: 6px; flex-wrap: nowrap; justify-content: flex-end; align-items: center; }
+.row-btns { display: flex; gap: 6px; flex-wrap: nowrap; justify-content: flex-start; align-items: center; }
 .row-btns .btn { flex: none; }
 
 /* ================================================================
@@ -300,10 +300,11 @@
    ছোট পর্দা — সাইডবার উপরে অনুভূমিক হয়ে যায়
    ================================================================ */
 @media (max-width: 860px) {
+  /* ছোট পর্দায় ছবির কলাম বাদ — শিরোনামই মূল */
   .adm { flex-direction: column; }
   .adm-side {
     width: 100%; height: auto; position: static;
-    border-left: none; border-bottom: 1px solid var(--line);
+    border-right: none; border-bottom: 1px solid var(--line);
   }
   .adm-brand { border-bottom: none; padding: 14px 16px 8px; }
   .adm-nav { flex-direction: row; overflow-x: auto; padding: 8px 12px; gap: 6px; }
@@ -313,5 +314,5 @@
   .adm-me { border-top: 1px solid var(--line-soft); }
   .adm-head { height: auto; padding: 14px 16px; flex-wrap: wrap; }
   .adm-body { padding: 18px 16px 60px; }
-  .tbl th:nth-child(1), .tbl td:nth-child(1) { display: none; }
+  .tbl th:nth-child(3), .tbl td:nth-child(3) { display: none; }
 }
