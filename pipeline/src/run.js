@@ -4,7 +4,7 @@ import { log, sleep, tokenOverlap } from './util.js';
 import { fetchAllFeeds, SOURCES } from './sources.js';
 import { safeExtract, isUnsuitableUrl } from './extract.js';
 import { rewriteArticle } from './rewrite.js';
-import { dedupe, rankItems, decideCardStyle, summarizeRanking, DEDUPE_THRESHOLD } from './score.js';
+import { dedupe, rankItems, decideCardStyle, summarizeRanking, selectBalanced, DEDUPE_THRESHOLD } from './score.js';
 import { renderCard } from './card.js';
 import { buildCaption, postPhoto, postComment, describeFacebookError, isFatalFacebookError } from './facebook.js';
 import { fetchSettings } from './supabase.js';
@@ -93,8 +93,12 @@ async function main() {
   log('dedupe', `${fresh.length} → ${unique.length} টি আলাদা খবর`);
 
   const ranked = rankItems(unique);
-  const selected = ranked.slice(0, maxArticles);
-  summarizeRanking(ranked, Math.min(10, selected.length));
+
+  // কেবল স্কোরে বাছলে ভারসাম্য থাকে না — কোটা দিয়ে দেশ/বিদেশ/বিষয়
+  // তিন ভাগেই খবর নিশ্চিত করা হয়
+  const { picked: selected, taken } = selectBalanced(ranked, maxArticles);
+  log('rank', `বাছাই — দেশ ${taken['দেশ']}, বিদেশ ${taken['বিদেশ']}, বিষয় ${taken['বিষয়']}`);
+  summarizeRanking(selected, Math.min(10, selected.length));
 
   // ৪. প্রতিটি খবর প্রক্রিয়াকরণ
   const produced = [];

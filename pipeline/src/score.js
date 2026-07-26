@@ -52,13 +52,33 @@ const HOT_WORDS = [
  * স্কোর = সোর্সের ওজন + কতগুলো সোর্সে এসেছে + কত নতুন + শিরোনামে গুরুত্বপূর্ণ শব্দ
  * ফেসবুকে দিনে ২০-৩০টা যাবে, তাই উপরের দিকেরগুলো বাছতে হবে।
  */
+/**
+ * পাঠক বাংলাদেশের, তাই দেশের খবর আগে।
+ *
+ * এটা দরকার হলো সোর্স বাড়ানোর পর: একই আন্তর্জাতিক খবর ৭টি সোর্সে আসে,
+ * অথচ দেশি খবর সর্বোচ্চ ৩-৪টিতে (দেশি সোর্স কম)। ফলে "কত সোর্সে এসেছে"
+ * সংকেতটা আপনাআপনি বিদেশি খবরের পক্ষে ঝুঁকে যায় — মেপে দেখা গেছে
+ * শীর্ষ ৬টির সবকটিই আন্তর্জাতিক হয়ে যাচ্ছিল।
+ */
+const SCOPE_BONUS = {
+  national: 1.2,
+  business: 0.8,
+  mixed: 1.0, // বিবিসি বাংলা — দেশ ও বিদেশ দুটোই দেয়
+  regional: 0.3, // প্রতিবেশী দেশ
+  technology: 0.3,
+  entertainment: 0.3,
+  international: 0,
+};
+
 export function scoreItem(item, now = Date.now()) {
   let score = 0;
 
   score += item.sourceWeight * 2;
+  score += SCOPE_BONUS[item.scope] ?? 0;
 
-  // একাধিক সোর্সে আসা মানে বড় খবর — সবচেয়ে বেশি ওজন এখানেই
-  score += Math.min(item.duplicateCount ?? 1, 4) * 1.5;
+  // একাধিক সোর্সে আসা মানে বড় খবর। সীমা ৪ থেকে ৩-এ নামানো হয়েছে —
+  // নাহলে বিদেশি খবরের স্বাভাবিক বেশি কভারেজই তাকে শীর্ষে তুলে দিত।
+  score += Math.min(item.duplicateCount ?? 1, 3) * 1.2;
 
   // সময়: ২ ঘণ্টার মধ্যে হলে পূর্ণ নম্বর, ২৪ ঘণ্টায় শূন্য
   const ageHours = item.publishedAt ? (now - new Date(item.publishedAt).getTime()) / 3600000 : 12;
@@ -100,6 +120,61 @@ export function decideCardStyle(item) {
   if (item.isOpinion) return { style: 'text', reason: 'মতামত/বিশ্লেষণ' };
   if ((item.body?.length ?? 0) < SHORT_ARTICLE_CHARS) return { style: 'text', reason: 'সংক্ষিপ্ত সংবাদ' };
   return { style: 'photo', reason: 'ছবি আছে' };
+}
+
+/**
+ * বাছাইয়ে বিভাগভিত্তিক কোটা।
+ *
+ * কেবল স্কোর দিয়ে বাছলে ভারসাম্য রাখা যায় না — মেপে দেখা গেছে ওজন
+ * সামান্য কমালেই শীর্ষ ১০-এর সবকটি আন্তর্জাতিক হয়ে যায়, আর সামান্য
+ * বাড়ালে সবকটি দেশি। মাঝামাঝি কোনো মান নেই, কারণ সোর্সের সংখ্যা ও
+ * প্রকাশের হার দুই দলে সম্পূর্ণ আলাদা।
+ *
+ * তাই ওজন নয়, কোটা: প্রতি রানে দেশের খবর সংখ্যাগরিষ্ঠ থাকবে, কিন্তু
+ * আন্তর্জাতিক ও বিষয়ভিত্তিক খবরও নিশ্চিতভাবে জায়গা পাবে। কোনো বিভাগে
+ * যথেষ্ট খবর না থাকলে সেই কোটা অন্যরা পূরণ করে নেয়।
+ */
+const SCOPE_GROUP = {
+  national: 'দেশ',
+  mixed: 'দেশ',
+  business: 'দেশ',
+  international: 'বিদেশ',
+  regional: 'বিদেশ',
+  technology: 'বিষয়',
+  entertainment: 'বিষয়',
+};
+
+const QUOTA_SHARE = { দেশ: 0.6, বিদেশ: 0.3, বিষয়: 0.1 };
+
+export function selectBalanced(ranked, max) {
+  const buckets = { দেশ: [], বিদেশ: [], বিষয়: [] };
+  for (const item of ranked) {
+    buckets[SCOPE_GROUP[item.scope] ?? 'বিদেশ'].push(item);
+  }
+
+  const picked = [];
+  const taken = { দেশ: 0, বিদেশ: 0, বিষয়: 0 };
+
+  for (const [group, share] of Object.entries(QUOTA_SHARE)) {
+    const want = Math.round(max * share);
+    const got = buckets[group].slice(0, want);
+    picked.push(...got);
+    taken[group] = got.length;
+  }
+
+  // কোটা পূরণ না হলে (যেমন বিনোদনের খবর কম) বাকি জায়গা স্কোর অনুযায়ী
+  if (picked.length < max) {
+    const used = new Set(picked.map((x) => x.id));
+    for (const item of ranked) {
+      if (picked.length >= max) break;
+      if (!used.has(item.id)) picked.push(item);
+    }
+  }
+
+  // শেষে আবার স্কোর অনুযায়ী সাজাই — গুরুত্বপূর্ণ খবর আগে প্রক্রিয়া হবে,
+  // কোটা শেষ হয়ে গেলেও যেন সেরাগুলো বাদ না পড়ে
+  picked.sort((a, b) => b.score - a.score);
+  return { picked: picked.slice(0, max), taken };
 }
 
 export function summarizeRanking(items, take) {

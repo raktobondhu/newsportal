@@ -30,25 +30,48 @@ export async function httpGet(url, { asBuffer = false, timeout = config.limits.r
  */
 export function nodeText(node) {
   if (node == null) return '';
-  if (typeof node === 'string') return node.trim();
+  if (typeof node === 'string') return decodeEntities(node).trim();
   if (typeof node === 'number') return String(node);
   if (Array.isArray(node)) return nodeText(node[0]);
   if (typeof node === 'object') return nodeText(node['#text'] ?? node['__cdata'] ?? '');
-  return String(node).trim();
+  return decodeEntities(String(node)).trim();
+}
+
+/**
+ * HTML এনটিটি ডিকোড।
+ *
+ * XML পার্সার কেবল XML-এর পাঁচটি এনটিটি চেনে (&amp; &lt; &gt; &quot; &apos;)।
+ * কিন্তু ফিডে HTML এনটিটিও আসে — Variety-র শিরোনামে পাওয়া গেছে
+ * "&#8216;The Odyssey&#8217;", যেটা ডিকোড না করলে হুবহু ওভাবেই শিরোনামে
+ * ছাপা হতো, আর কার্ডেও তাই আঁকা হতো।
+ */
+export function decodeEntities(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(Number(dec)))
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&lsquo;|&rsquo;/gi, "'")
+    .replace(/&ldquo;|&rdquo;/gi, '"')
+    .replace(/&hellip;/gi, '…')
+    .replace(/&mdash;/gi, '—')
+    .replace(/&ndash;/gi, '–')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&apos;/gi, "'")
+    // &amp; সবার শেষে — আগে করলে "&amp;#39;" ভুলভাবে দুবার ডিকোড হতো
+    .replace(/&amp;/gi, '&');
 }
 
 export function stripHtml(html) {
   if (!html) return '';
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
+  return decodeEntities(
+    html
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+  )
     .replace(/\s+/g, ' ')
     .trim();
 }

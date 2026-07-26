@@ -155,12 +155,43 @@ export async function getArticle(slug) {
   return (await getAllArticles()).find((a) => canonicalSlug(a.slug) === want) ?? null;
 }
 
+/**
+ * বিভাগের নির্ধারিত ক্রম — সংবাদপত্রের চিরাচরিত সাজানো।
+ *
+ * আগে খবরের সংখ্যা অনুযায়ী সাজানো হতো, তাতে দুটো সমস্যা ছিল:
+ * মেনুর ক্রম প্রতিদিন বদলে যেত (পাঠক যেখানে ক্লিক করতে অভ্যস্ত, সেখানে
+ * আর থাকত না), আর কম খবরের বিভাগ — যেমন প্রযুক্তি বা স্বাস্থ্য —
+ * তালিকার শেষে গিয়ে বাদ পড়ে যেত।
+ */
+const CATEGORY_ORDER = [
+  'জাতীয়',
+  'আন্তর্জাতিক',
+  'রাজনীতি',
+  'অর্থনীতি',
+  'খেলা',
+  'বিনোদন',
+  'প্রযুক্তি',
+  'শিক্ষা',
+  'স্বাস্থ্য',
+  'অপরাধ',
+];
+
 export async function getCategories() {
   const counts = new Map();
   for (const a of await getAllArticles()) counts.set(a.category, (counts.get(a.category) ?? 0) + 1);
-  return [...counts.entries()]
+
+  const known = CATEGORY_ORDER.filter((name) => counts.has(name)).map((name) => ({
+    name,
+    count: counts.get(name),
+  }));
+
+  // তালিকার বাইরের কোনো বিভাগ এলে (মডেল নতুন নাম দিলে) সেটাও যেন হারিয়ে না যায়
+  const extra = [...counts.entries()]
+    .filter(([name]) => !CATEGORY_ORDER.includes(name))
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
+
+  return [...known, ...extra];
 }
 
 export async function getByCategory(category) {

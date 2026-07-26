@@ -10,7 +10,17 @@ import { httpGet, nodeText, stripHtml, hash, log } from './util.js';
  * bd-pratidin, kalerkantho, bdnews24, jugantor ইচ্ছাকৃতভাবে বাদ:
  * ওদের ফিড Cloudflare-এ 403 দেয় (২০২৬-০৭ এ যাচাই করা)।
  */
+/**
+ * ওজন (weight) স্কোরিংয়ে সোর্সের গুরুত্ব ঠিক করে। পাঠক বাংলাদেশের,
+ * তাই দেশীয় সোর্স সবার উপরে — নাহলে আন্তর্জাতিক খবরের ভিড়ে দেশের
+ * খবর চাপা পড়ে যেত (সোর্স সংখ্যায় বিদেশিরাই বেশি)।
+ *
+ * প্রতিটি ফিড যোগ করার আগে চালিয়ে দেখা হয়েছে: খোলে কিনা, কতটা আইটেম
+ * দেয়, ছবি আছে কিনা, আর আর্টিকেল পেজ থেকে যথেষ্ট লেখা বেরোয় কিনা।
+ * test/check-sources.mjs দিয়ে যেকোনো সময় আবার যাচাই করা যায়।
+ */
 export const SOURCES = [
+  // ================= বাংলাদেশ =================
   {
     id: 'prothomalo',
     name: 'প্রথম আলো',
@@ -28,6 +38,22 @@ export const SOURCES = [
     scope: 'mixed',
   },
   {
+    id: 'jagonews',
+    name: 'জাগোনিউজ২৪',
+    url: 'https://www.jagonews24.com/rss/rss.xml',
+    lang: 'bn',
+    weight: 0.95,
+    scope: 'national',
+  },
+  {
+    id: 'ajkerpatrika',
+    name: 'আজকের পত্রিকা',
+    url: 'https://www.ajkerpatrika.com/feed',
+    lang: 'bn',
+    weight: 0.9,
+    scope: 'national',
+  },
+  {
     id: 'dailystar',
     name: 'The Daily Star',
     url: 'https://www.thedailystar.net/rss.xml',
@@ -35,6 +61,16 @@ export const SOURCES = [
     weight: 0.85,
     scope: 'national',
   },
+  {
+    id: 'tbsnews',
+    name: 'The Business Standard',
+    url: 'https://www.tbsnews.net/rss.xml',
+    lang: 'en',
+    weight: 0.8,
+    scope: 'business',
+  },
+
+  // ================= আন্তর্জাতিক =================
   {
     id: 'bbcworld',
     name: 'BBC World',
@@ -50,6 +86,77 @@ export const SOURCES = [
     lang: 'en',
     weight: 0.85,
     scope: 'international',
+  },
+  {
+    id: 'guardian',
+    name: 'The Guardian',
+    url: 'https://www.theguardian.com/world/rss',
+    lang: 'en',
+    weight: 0.85,
+    scope: 'international',
+  },
+  {
+    id: 'cnnworld',
+    name: 'CNN World',
+    url: 'http://rss.cnn.com/rss/edition_world.rss',
+    lang: 'en',
+    weight: 0.8,
+    scope: 'international',
+  },
+  {
+    id: 'france24',
+    name: 'France 24',
+    url: 'https://www.france24.com/en/rss',
+    lang: 'en',
+    weight: 0.75,
+    scope: 'international',
+  },
+  {
+    id: 'anadolu',
+    // মধ্যপ্রাচ্য ও মুসলিম বিশ্বের খবরে পশ্চিমা সোর্সের চেয়ে বিস্তারিত
+    name: 'Anadolu Agency',
+    url: 'https://www.aa.com.tr/en/rss/default?cat=world',
+    lang: 'en',
+    weight: 0.75,
+    scope: 'international',
+  },
+
+  // ================= দক্ষিণ এশিয়া =================
+  // প্রতিবেশী দেশের খবর বাংলাদেশি পাঠকের কাছে গুরুত্বপূর্ণ
+  {
+    id: 'thehindu',
+    name: 'The Hindu',
+    url: 'https://www.thehindu.com/news/international/feeder/default.rss',
+    lang: 'en',
+    weight: 0.75,
+    scope: 'regional',
+  },
+  {
+    id: 'toi',
+    name: 'Times of India',
+    url: 'https://timesofindia.indiatimes.com/rssfeedstopstories.cms',
+    lang: 'en',
+    weight: 0.7,
+    scope: 'regional',
+  },
+
+  // ================= বিষয়ভিত্তিক =================
+  // প্রযুক্তি ও বিনোদন বিভাগে সাধারণ সোর্স থেকে যথেষ্ট খবর আসে না
+  {
+    id: 'theverge',
+    name: 'The Verge',
+    url: 'https://www.theverge.com/rss/index.xml',
+    lang: 'en',
+    weight: 0.7,
+    scope: 'technology',
+  },
+  {
+    id: 'variety',
+    name: 'Variety',
+    url: 'https://variety.com/feed/',
+    lang: 'en',
+    weight: 0.65,
+    scope: 'entertainment',
   },
 ];
 
