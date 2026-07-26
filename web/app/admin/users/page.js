@@ -27,9 +27,16 @@ export default async function UsersPage() {
 
   return (
     <>
-      <h1>ব্যবহারকারী</h1>
+      <header className="adm-head">
+        <div>
+          <h1>ব্যবহারকারী</h1>
+          <div className="sub">অ্যাকাউন্ট ও রোল ব্যবস্থাপনা</div>
+        </div>
+      </header>
 
-      <table className="adm-table">
+      <div className="adm-body">
+
+      <table className="tbl">
         <thead>
           <tr>
             <th>নাম</th>
@@ -50,14 +57,14 @@ export default async function UsersPage() {
               </td>
               <td>{bnDate(u.last_login)}</td>
               <td>
-                <span className={`badge ${u.active ? 'ok' : 'off'}`}>{u.active ? 'সক্রিয়' : 'নিষ্ক্রিয়'}</span>
+                <span className={`badge ${u.active ? 'ok' : 'stop'}`}>{u.active ? 'সক্রিয়' : 'নিষ্ক্রিয়'}</span>
               </td>
               <td>
-                <div className="btn-row">
+                <div className="row-btns">
                   <ResetPasswordForm userId={u.id} name={u.name} />
                   {u.id !== user.id && (
                     <form action={setUserActiveAction.bind(null, u.id, !u.active)}>
-                      <button className={`btn tiny ${u.active ? 'danger' : ''}`} type="submit">
+                      <button className={`btn tiny ${u.active ? 'stop' : ''}`} type="submit">
                         {u.active ? 'নিষ্ক্রিয়' : 'সক্রিয়'}
                       </button>
                     </form>
@@ -74,9 +81,9 @@ export default async function UsersPage() {
         <NewUserForm />
       </div>
 
-      <div className="adm-card" style={{ marginTop: 26 }}>
+      <div className="tile" style={{ marginTop: 26 }}>
         <div className="l" style={{ marginBottom: 8 }}>রোল কী করতে পারে</div>
-        <table className="adm-table" style={{ background: 'transparent' }}>
+        <table className="tbl" style={{ background: 'transparent' }}>
           <thead>
             <tr><th>কাজ</th><th style={{ width: 110 }}>ম্যানেজার</th><th style={{ width: 110 }}>অ্যাডমিন</th></tr>
           </thead>
@@ -89,6 +96,7 @@ export default async function UsersPage() {
             <tr><td className="t">ব্যবহারকারী ব্যবস্থাপনা</td><td>—</td><td>✓</td></tr>
           </tbody>
         </table>
+      </div>
       </div>
     </>
   );

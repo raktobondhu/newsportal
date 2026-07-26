@@ -11,7 +11,7 @@ export default function NumberSetting({ settingKey, value, title, note, min = 0,
   const changed = Number(v) !== Number(value);
 
   return (
-    <div className="setting">
+    <div className="ctl">
       <div className="info">
         <b>{title}</b>
         <span>{note}</span>

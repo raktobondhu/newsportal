@@ -38,14 +38,21 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <h1>সেটিংস</h1>
+      <header className="adm-head">
+        <div>
+          <h1>সেটিংস</h1>
+          <div className="sub">পাইপলাইন ও সোর্স নিয়ন্ত্রণ</div>
+        </div>
+      </header>
+
+      <div className="adm-body">
 
       <h2>প্রতি রানে কতটা</h2>
       <NumberSetting
         settingKey="max_articles_per_run"
         value={Number(s.max_articles_per_run ?? 5)}
         title="আর্টিকেল"
-        note="প্রতি ২ ঘণ্টায় সর্বোচ্চ কতটি খবর তৈরি হবে। বেশি দিলে LLM কোটা দ্রুত ফুরাবে।"
+        note="প্রতি রানে সর্বোচ্চ কতটি খবর তৈরি হবে। পাইপলাইন চলে প্রতি ঘণ্টায়, তাই ৮ দিলে দিনে ~১৯২টি। ফিডে আসে ~১৫/ঘণ্টা, তাই ১২-এর বেশি দিয়ে লাভ নেই।"
         min={1}
         max={20}
       />
@@ -53,7 +60,7 @@ export default async function SettingsPage() {
         settingKey="max_posts_per_run"
         value={Number(s.max_posts_per_run ?? 2)}
         title="ফেসবুক পোস্ট"
-        note="প্রতি রানে সর্বোচ্চ কতটি পোস্ট। দিনে ১২ রান, তাই ২ দিলে ~২৪টি।"
+        note="প্রতি রানে সর্বোচ্চ কতটি পোস্ট। দিনে ২৪ রান, তাই ২ দিলে ~৪৮টি। বেশি দিলে ফেসবুক স্প্যাম ধরে রিচ কমিয়ে দিতে পারে।"
         min={0}
         max={10}
       />
@@ -66,15 +73,15 @@ export default async function SettingsPage() {
         const off = disabled.includes(src.id);
         const next = off ? disabled.filter((x) => x !== src.id) : [...disabled, src.id];
         return (
-          <div className="setting" key={src.id}>
+          <div className="ctl" key={src.id}>
             <div className="info">
               <b>
-                {src.name} <span className={`badge ${off ? 'off' : 'ok'}`}>{off ? 'বন্ধ' : 'চালু'}</span>
+                {src.name} <span className={`badge ${off ? 'stop' : 'ok'}`}>{off ? 'বন্ধ' : 'চালু'}</span>
               </b>
               <span>{src.id}</span>
             </div>
             <form action={updateSettingAction.bind(null, 'disabled_sources', next)}>
-              <button className={`btn ${off ? 'primary' : 'danger'}`} type="submit">
+              <button className={`btn ${off ? 'primary' : 'stop'}`} type="submit">
                 {off ? 'চালু করুন' : 'বন্ধ করুন'}
               </button>
             </form>
@@ -85,6 +92,7 @@ export default async function SettingsPage() {
       <h2>নিজের পাসওয়ার্ড</h2>
       <div style={{ maxWidth: 420 }}>
         <ChangePasswordForm />
+      </div>
       </div>
     </>
   );

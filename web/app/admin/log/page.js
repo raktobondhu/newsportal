@@ -33,15 +33,22 @@ export default async function LogPage() {
 
   return (
     <>
-      <h1>কাজের হিসাব</h1>
+      <header className="adm-head">
+        <div>
+          <h1>কাজের হিসাব</h1>
+          <div className="sub">কে কখন কী করেছেন</div>
+        </div>
+      </header>
+
+      <div className="adm-body">
       <p className="hint" style={{ marginTop: -12, marginBottom: 18 }}>
         কে কখন কী করেছেন। একাধিক মানুষ কাজ করলে এটাই ভরসা — সর্বশেষ ২০০টি।
       </p>
 
       {rows.length === 0 ? (
-        <div className="empty-note">এখনো কোনো কাজ নথিভুক্ত হয়নি</div>
+        <div className="empty">এখনো কোনো কাজ নথিভুক্ত হয়নি</div>
       ) : (
-        <table className="adm-table">
+        <table className="tbl">
           <thead>
             <tr>
               <th style={{ width: 140 }}>কখন</th>
@@ -65,6 +72,7 @@ export default async function LogPage() {
           </tbody>
         </table>
       )}
+      </div>
     </>
   );
 }

@@ -9,11 +9,20 @@ const bn = (v) => String(v).replace(/[0-9]/g, (c) => '০১২৩৪৫৬৭�
 
 function ago(iso) {
   const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (m < 1) return 'এইমাত্র';
   if (m < 60) return `${bn(m)} মিনিট আগে`;
   const h = Math.floor(m / 60);
   if (h < 24) return `${bn(h)} ঘণ্টা আগে`;
   return `${bn(Math.floor(h / 24))} দিন আগে`;
 }
+
+const FILTERS = [
+  ['all', 'সব'],
+  ['visible', 'প্রকাশিত'],
+  ['hidden', 'লুকানো'],
+  ['posted', 'ফেসবুকে গেছে'],
+  ['unposted', 'যায়নি'],
+];
 
 export default async function ArticlesPage({ searchParams }) {
   const user = await currentUser();
@@ -23,9 +32,9 @@ export default async function ArticlesPage({ searchParams }) {
   const q = (sp?.q ?? '').trim();
   const filter = sp?.filter ?? 'all';
 
-  // PostgREST-এ ফিল্টার সাজাই। খোঁজার সময় ilike ব্যবহার করছি যাতে
-  // ছোট-বড় হরফে পার্থক্য না হয় (বাংলায় প্রভাব নেই, ইংরেজি নামে আছে)।
-  let query = 'articles?select=slug,headline,category,card_url,image_url,hidden,facebook_post_id,published_at,provider&order=published_at.desc&limit=100';
+  let query =
+    'articles?select=slug,headline,category,card_url,image_url,hidden,facebook_post_id,published_at,provider,card_style' +
+    '&order=published_at.desc&limit=100';
   if (q) query += `&or=(headline.ilike.*${encodeURIComponent(q)}*,summary.ilike.*${encodeURIComponent(q)}*)`;
   if (filter === 'hidden') query += '&hidden=eq.true';
   if (filter === 'visible') query += '&hidden=eq.false';
@@ -34,114 +43,113 @@ export default async function ArticlesPage({ searchParams }) {
 
   const rows = (await adminQuery(query)) ?? [];
 
-  const tab = (key, label) => (
-    <a
-      className="btn tiny"
-      href={`/admin/articles?filter=${key}${q ? `&q=${encodeURIComponent(q)}` : ''}`}
-      style={filter === key ? { borderColor: 'var(--accent)', color: '#fff' } : undefined}
-    >
-      {label}
-    </a>
-  );
-
   return (
     <>
-      <h1>খবর ব্যবস্থাপনা</h1>
+      <header className="adm-head">
+        <div>
+          <h1>খবর</h1>
+          <div className="sub">{bn(rows.length)} টি দেখানো হচ্ছে</div>
+        </div>
+      </header>
 
-      <form style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-        <input
-          className="field"
-          name="q"
-          defaultValue={q}
-          placeholder="শিরোনাম বা সারমর্মে খুঁজুন…"
-          style={{ flex: 1, margin: 0, padding: '10px 12px', borderRadius: 8, background: '#0d1117', border: '1px solid var(--line)', color: 'var(--fg)' }}
-        />
-        <input type="hidden" name="filter" value={filter} />
-        <button className="btn" type="submit">খুঁজুন</button>
-      </form>
-
-      <div className="btn-row" style={{ justifyContent: 'flex-start', marginBottom: 18 }}>
-        {tab('all', 'সব')}
-        {tab('visible', 'প্রকাশিত')}
-        {tab('hidden', 'লুকানো')}
-        {tab('posted', 'ফেসবুকে গেছে')}
-        {tab('unposted', 'যায়নি')}
-      </div>
-
-      {rows.length === 0 ? (
-        <div className="empty-note">কিছু পাওয়া যায়নি</div>
-      ) : (
-        <table className="adm-table">
-          <thead>
-            <tr>
-              <th style={{ width: 78 }}>ছবি</th>
-              <th>শিরোনাম</th>
-              <th style={{ width: 110 }}>বিভাগ</th>
-              <th style={{ width: 120 }}>অবস্থা</th>
-              <th style={{ width: 250 }}>কাজ</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((a) => (
-              <tr key={a.slug} className={a.hidden ? 'dim' : undefined}>
-                <td>
-                  {a.image_url || a.card_url ? (
-                    <img className="thumb" src={a.image_url || a.card_url} alt="" />
-                  ) : (
-                    <div className="thumb" />
-                  )}
-                </td>
-                <td className="t">
-                  <a href={`/admin/articles/${encodeURIComponent(a.slug)}`}>{a.headline}</a>
-                  <div style={{ color: 'var(--muted)', fontSize: '.83rem', marginTop: 4 }}>
-                    {ago(a.published_at)} · {a.provider ?? '—'}
-                  </div>
-                </td>
-                <td>{a.category}</td>
-                <td>
-                  {a.hidden ? (
-                    <span className="badge off">লুকানো</span>
-                  ) : (
-                    <span className="badge ok">প্রকাশিত</span>
-                  )}
-                  <br />
-                  {a.facebook_post_id ? (
-                    <span className="badge" style={{ marginTop: 5 }}>FB ✓</span>
-                  ) : (
-                    <span className="badge warn" style={{ marginTop: 5 }}>FB ✗</span>
-                  )}
-                </td>
-                <td>
-                  <div className="btn-row">
-                    <a className="btn tiny" href={`/admin/articles/${encodeURIComponent(a.slug)}`}>সম্পাদনা</a>
-
-                    <form action={toggleHiddenAction.bind(null, a.slug, !a.hidden)}>
-                      <button className="btn tiny" type="submit">{a.hidden ? 'দেখান' : 'লুকান'}</button>
-                    </form>
-
-                    {!a.facebook_post_id && (
-                      <form action={postToFacebookAction.bind(null, a.slug)}>
-                        <button className="btn tiny" type="submit">FB-তে দিন</button>
-                      </form>
-                    )}
-
-                    {user.role === 'admin' && (
-                      <form action={deleteArticleAction.bind(null, a.slug)}>
-                        <button className="btn tiny danger" type="submit">মুছুন</button>
-                      </form>
-                    )}
-                  </div>
-                </td>
-              </tr>
+      <div className="adm-body">
+        {/* খোঁজা ও ফিল্টার এক সারিতে, তালিকার ঠিক উপরে */}
+        <div className="toolbar">
+          <form style={{ display: 'flex', gap: 9, flex: 1, minWidth: 240 }}>
+            <input type="search" name="q" defaultValue={q} placeholder="শিরোনাম বা সারমর্মে খুঁজুন…" />
+            <input type="hidden" name="filter" value={filter} />
+            <button className="btn" type="submit">খুঁজুন</button>
+          </form>
+          <div className="chips">
+            {FILTERS.map(([key, label]) => (
+              <a
+                key={key}
+                className={filter === key ? 'on' : undefined}
+                href={`/admin/articles?filter=${key}${q ? `&q=${encodeURIComponent(q)}` : ''}`}
+              >
+                {label}
+              </a>
             ))}
-          </tbody>
-        </table>
-      )}
+          </div>
+        </div>
 
-      <p className="hint" style={{ marginTop: 14 }}>
-        সর্বোচ্চ ১০০টি দেখানো হচ্ছে। “লুকান” করলে খবরটি সাইট থেকে সরে যায় কিন্তু ডেটাবেসে
-        থেকে যায় — ভুল হলে আবার দেখানো যাবে। মোছা স্থায়ী, তাই কেবল অ্যাডমিন পারেন।
-      </p>
+        {rows.length === 0 ? (
+          <div className="panel">
+            <div className="empty">কিছু পাওয়া যায়নি</div>
+          </div>
+        ) : (
+          <div className="panel">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th style={{ width: 88 }}></th>
+                  <th>শিরোনাম</th>
+                  <th style={{ width: 106 }}>বিভাগ</th>
+                  <th style={{ width: 128 }}>অবস্থা</th>
+                  <th style={{ width: 300 }}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((a) => (
+                  <tr key={a.slug} className={a.hidden ? 'dim' : undefined}>
+                    <td>
+                      {a.image_url || a.card_url ? (
+                        <img className="thumb" src={a.image_url || a.card_url} alt="" />
+                      ) : (
+                        <div className="thumb" />
+                      )}
+                    </td>
+                    <td>
+                      <a className="title" href={`/admin/articles/${encodeURIComponent(a.slug)}`}>
+                        {a.headline}
+                      </a>
+                      <div className="meta">
+                        {ago(a.published_at)} · {a.provider ?? '—'} · {a.card_style ?? '—'}
+                      </div>
+                    </td>
+                    <td>{a.category}</td>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'flex-end' }}>
+                        <span className={`badge ${a.hidden ? 'stop' : 'ok'}`}>
+                          {a.hidden ? '■ লুকানো' : '● প্রকাশিত'}
+                        </span>
+                        <span className={`badge ${a.facebook_post_id ? 'ok' : 'warn'}`}>
+                          {a.facebook_post_id ? '✓ ফেসবুকে' : '— যায়নি'}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="row-btns">
+                        <a className="btn tiny" href={`/admin/articles/${encodeURIComponent(a.slug)}`}>
+                          সম্পাদনা
+                        </a>
+                        <form action={toggleHiddenAction.bind(null, a.slug, !a.hidden)}>
+                          <button className="btn tiny" type="submit">{a.hidden ? 'দেখান' : 'লুকান'}</button>
+                        </form>
+                        {!a.facebook_post_id && (
+                          <form action={postToFacebookAction.bind(null, a.slug)}>
+                            <button className="btn tiny" type="submit">FB-তে দিন</button>
+                          </form>
+                        )}
+                        {user.role === 'admin' && (
+                          <form action={deleteArticleAction.bind(null, a.slug)}>
+                            <button className="btn tiny stop" type="submit">মুছুন</button>
+                          </form>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <p className="hint" style={{ marginTop: 14 }}>
+          সর্বোচ্চ ১০০টি দেখানো হয়। <b>লুকান</b> করলে খবরটি সাইট থেকে সরে যায় কিন্তু ডেটাবেসে
+          থেকে যায় — ভুল হলে আবার দেখানো যাবে। <b>মুছুন</b> স্থায়ী, তাই কেবল অ্যাডমিন পারেন।
+        </p>
+      </div>
     </>
   );
 }
