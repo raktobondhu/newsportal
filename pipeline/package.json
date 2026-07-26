@@ -1,0 +1,19 @@
+{
+  "name": "kotha-matrix-pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "কথা ম্যাট্রিক্স — সংবাদ সংগ্রহ, বাংলা রিরাইট, কার্ড তৈরি ও ফেসবুক প্রকাশের পাইপলাইন",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "run": "node src/run.js",
+    "dry": "node src/run.js --dry-run",
+    "feeds": "node src/sources.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "fast-xml-parser": "^4.5.0"
+  }
+}

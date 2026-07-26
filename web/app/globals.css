@@ -1,0 +1,142 @@
+@font-face {
+  font-family: 'KothaBangla';
+  src: url('/fonts/kalpurush.ttf') format('truetype');
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+:root {
+  --accent: #d11d4d;
+  --gold: #ffae00;
+  --bg: #ffffff;
+  --fg: #16181d;
+  --muted: #61666f;
+  --line: #e6e8ec;
+  --card: #ffffff;
+  --shadow: 0 1px 3px rgba(0, 0, 0, .06), 0 8px 24px rgba(0, 0, 0, .04);
+  --radius: 12px;
+  --maxw: 1160px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1116;
+    --fg: #eceef2;
+    --muted: #9aa1ac;
+    --line: #232833;
+    --card: #151a21;
+    --shadow: 0 1px 3px rgba(0, 0, 0, .4);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'KothaBangla', 'Nirmala UI', system-ui, sans-serif;
+  /* বাংলা যুক্তাক্ষরে লাইন-হাইট কম হলে মাত্রা কেটে যায় */
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
+
+/* ---------- হেডার ---------- */
+.site-header {
+  border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 50;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+}
+.header-row { display: flex; align-items: center; gap: 22px; height: 74px; }
+.logo img { height: 46px; width: auto; }
+.nav { display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav a { color: var(--muted); font-size: 1.02rem; white-space: nowrap; padding: 4px 0; }
+.nav a:hover, .nav a.active { color: var(--accent); }
+
+/* ---------- গ্রিড ---------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
+  gap: 26px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.card:hover { transform: translateY(-3px); box-shadow: 0 6px 28px rgba(0,0,0,.12); }
+.card .thumb { aspect-ratio: 1 / 1; background: var(--line); }
+.card .thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ছবিহীন খবরের জন্য। কার্ড-ইমেজ বসালে শিরোনাম দুবার দেখা যেত, তাই
+   এখানে কেবল ব্র্যান্ডের রঙে একটি শান্ত ব্লক। */
+.thumb-empty {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background:
+    radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--accent) 22%, transparent) 0%, transparent 55%),
+    linear-gradient(155deg, #0f172a 0%, #1a2f4d 60%, #123047 100%);
+}
+.thumb-empty span {
+  color: #fff; font-size: 1.05rem; letter-spacing: .5px;
+  background: color-mix(in srgb, var(--accent) 85%, transparent);
+  padding: 6px 20px; border-radius: 6px;
+}
+.lead .thumb-empty { aspect-ratio: 1 / 1; }
+.card .body { padding: 16px 18px 20px; }
+.card h3 { margin: 0 0 10px; font-size: 1.16rem; line-height: 1.55; }
+.card p { margin: 0; color: var(--muted); font-size: .95rem; line-height: 1.7; }
+
+.chip {
+  display: inline-block; background: var(--accent); color: #fff;
+  font-size: .8rem; padding: 3px 12px; border-radius: 5px; margin-bottom: 10px;
+}
+
+.meta { color: var(--muted); font-size: .86rem; display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+
+/* ---------- প্রধান খবর ---------- */
+.lead { display: grid; grid-template-columns: 1.15fr 1fr; gap: 32px; align-items: center; margin: 34px 0 44px; }
+.lead .thumb { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); }
+.lead h2 { font-size: 2.05rem; line-height: 1.5; margin: 12px 0 14px; }
+.lead p { color: var(--muted); margin: 0; }
+
+@media (max-width: 780px) {
+  .lead { grid-template-columns: 1fr; gap: 18px; }
+  .lead h2 { font-size: 1.5rem; }
+  .header-row { height: 64px; gap: 14px; }
+  .logo img { height: 38px; }
+}
+
+/* ---------- আর্টিকেল পেজ ---------- */
+.article { max-width: 760px; margin: 0 auto; padding: 34px 0 60px; }
+.article h1 { font-size: 2.15rem; line-height: 1.5; margin: 12px 0 16px; }
+.article .hero { border-radius: var(--radius); overflow: hidden; margin: 22px 0; border: 1px solid var(--line); }
+.article .content p { font-size: 1.13rem; line-height: 1.95; margin: 0 0 1.35em; }
+.article .summary {
+  font-size: 1.16rem; color: var(--fg); border-right: 4px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0 28px;
+}
+
+.tags { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 22px; }
+.tags span { background: var(--line); color: var(--muted); padding: 4px 12px; border-radius: 999px; font-size: .87rem; }
+
+/* ---------- ফুটার ---------- */
+.site-footer { border-top: 1px solid var(--line); margin-top: 60px; padding: 34px 0; color: var(--muted); font-size: .92rem; }
+.site-footer .wrap { display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+
+.section-title { font-size: 1.4rem; margin: 40px 0 20px; padding-right: 14px; border-right: 4px solid var(--accent); }
+
+.empty { text-align: center; color: var(--muted); padding: 80px 20px; }

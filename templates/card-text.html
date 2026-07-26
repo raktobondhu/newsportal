@@ -1,0 +1,59 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+  /* ফন্ট ফাইলটাই এখানে এম্বেড হয় — সিস্টেমে Kalpurush আছে ধরে নিলে
+     Linux/CI-তে বাংলা যুক্তাক্ষর ভেঙে যায়। */
+  {{FONTFACE}}
+
+  html, body { margin: 0; padding: 0; }
+  body {
+    width: 1080px; height: 1080px; overflow: hidden; position: relative;
+    font-family: 'KothaBangla', 'Kalpurush', 'Nirmala UI', sans-serif;
+    background: linear-gradient(155deg, #0f172a 0%, #1a2f4d 55%, #123047 100%);
+    color: #fff;
+  }
+
+  /* হালকা টেক্সচার — একদম ফ্ল্যাট রঙ ফিডে বিজ্ঞাপনের মতো দেখায় */
+  body::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 78% 18%, {{ACCENT}}26 0%, transparent 46%);
+  }
+
+  /* টেক্সট কার্ডে ব্যাকগ্রাউন্ড নিয়ন্ত্রণে আছে, তাই প্লেট লাগে না */
+  .logo {
+    position: absolute; top: 46px; left: 60px; z-index: 2;
+    height: 84px; width: auto;
+  }
+
+  .content {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+    padding: 0 64px 64px; box-sizing: border-box;
+  }
+
+  .chip {
+    display: inline-block; background: {{ACCENT}}; color: #fff;
+    padding: 11px 30px; border-radius: 7px;
+    font-size: 31px; font-weight: bold; margin-bottom: 26px;
+  }
+
+  h1 { margin: 0; font-size: {{FONTSIZE}}px; line-height: 1.36; font-weight: bold; }
+
+  /* এখানে কেবল তারিখটাই থাকে। space-between রাখলে একমাত্র সন্তানটি
+     বাঁয়ে চলে যেত আর ডানপাশ ফাঁকা পড়ে থাকত — flex-end ডানেই ধরে রাখে। */
+  .meta {
+    margin-top: 34px; padding-top: 24px;
+    border-top: 2px solid rgba(255,255,255,.22);
+    display: flex; justify-content: flex-end; align-items: center;
+    font-size: 27px; opacity: .8;
+  }
+</style>
+
+<img class="logo" src="{{LOGO}}" alt="">
+
+<div class="content">
+  <div class="chip">{{CATEGORY}}</div>
+  <h1>{{HEADLINE}}</h1>
+  <div class="meta">
+    <span>{{DATE}}</span>
+  </div>
+</div>

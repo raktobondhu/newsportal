@@ -1,0 +1,81 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+  /* ফন্ট ফাইলটাই এখানে এম্বেড হয় — সিস্টেমে Kalpurush আছে ধরে নিলে
+     Linux/CI-তে বাংলা যুক্তাক্ষর ভেঙে যায়। */
+  {{FONTFACE}}
+
+  html, body { margin: 0; padding: 0; }
+  body {
+    width: 1080px; height: 1080px; overflow: hidden; position: relative;
+    font-family: 'KothaBangla', 'Kalpurush', 'Nirmala UI', sans-serif;
+    background: #0b0f19; color: #fff;
+  }
+
+  /* ছবি পুরো ক্যানভাস জুড়ে, cover করে — অনুপাত নষ্ট হবে না */
+  .photo {
+    position: absolute; inset: 0;
+    background-image: url('{{IMAGE}}');
+    background-size: cover;
+    background-position: center 35%;
+  }
+
+  /* নিচের দিকে গাঢ় গ্রেডিয়েন্ট — লেখা পড়ার জন্য কনট্রাস্ট দরকার,
+     ছবি যত উজ্জ্বলই হোক টেক্সট যেন হারিয়ে না যায় */
+  .scrim {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom,
+      rgba(0,0,0,.55) 0%,
+      rgba(0,0,0,.10) 28%,
+      rgba(0,0,0,.62) 60%,
+      rgba(0,0,0,.94) 100%);
+  }
+
+  /* ছবির উপর লোগো — ছবি উজ্জ্বল হলে লোগো মিশে যেতে পারে,
+     তাই পেছনে হালকা গাঢ় প্লেট আর drop-shadow */
+  .logo {
+    position: absolute; top: 46px; left: 52px;
+    height: 84px; width: auto;
+    padding: 12px 20px; border-radius: 12px;
+    background: rgba(8,12,22,.42);
+    filter: drop-shadow(0 3px 10px rgba(0,0,0,.55));
+  }
+
+  .content {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 0 64px 64px; box-sizing: border-box;
+  }
+
+  .chip {
+    display: inline-block; background: {{ACCENT}}; color: #fff;
+    padding: 11px 30px; border-radius: 7px;
+    font-size: 31px; font-weight: bold; margin-bottom: 26px;
+  }
+
+  h1 {
+    margin: 0; font-size: {{FONTSIZE}}px; line-height: 1.34;
+    font-weight: bold; text-shadow: 0 3px 22px rgba(0,0,0,.75);
+  }
+
+  /* এখানে কেবল তারিখটাই থাকে। space-between রাখলে একমাত্র সন্তানটি
+     বাঁয়ে চলে যেত আর ডানপাশ ফাঁকা পড়ে থাকত — flex-end ডানেই ধরে রাখে। */
+  .meta {
+    margin-top: 30px; padding-top: 24px;
+    border-top: 2px solid rgba(255,255,255,.22);
+    display: flex; justify-content: flex-end; align-items: center;
+    font-size: 27px; opacity: .82;
+  }
+</style>
+
+<div class="photo"></div>
+<div class="scrim"></div>
+
+<img class="logo" src="{{LOGO}}" alt="">
+
+<div class="content">
+  <div class="chip">{{CATEGORY}}</div>
+  <h1>{{HEADLINE}}</h1>
+  <div class="meta">
+    <span>{{DATE}}</span>
+  </div>
+</div>

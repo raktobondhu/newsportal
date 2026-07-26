@@ -1,0 +1,90 @@
+name: সংবাদ পাইপলাইন
+
+on:
+  schedule:
+    # প্রতি ২ ঘণ্টায় একবার — দিনে ১২ রান।
+    #
+    # হিসাবটা ফ্রি কোটা ধরে করা:
+    #   ১২ রান × ৫ আর্টিকেল  = দিনে ~৬০টি আর্টিকেল (সাইটের জন্য যথেষ্ট)
+    #   ১২ রান × ২ পোস্ট     = দিনে ~২৪টি ফেসবুক পোস্ট (লক্ষ্য ২০-৩০)
+    #
+    # প্রতি ঘণ্টায় চালালে দিনে ২৮৮টি LLM কল লাগত — ফ্রি কোটার অনেক বাইরে।
+    # cron নিজেই পোস্টের মধ্যে ব্যবধান তৈরি করছে, তাই স্ক্রিপ্টের ভেতরে
+    # দীর্ঘ অপেক্ষার দরকার নেই।
+    #
+    # UTC সময়; বাংলাদেশ = UTC+6।
+    - cron: '5 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'ফেসবুকে পোস্ট না করে শুধু আর্টিকেল তৈরি'
+        type: boolean
+        default: true
+
+concurrency:
+  # আগের রান শেষ না হলে নতুনটা যেন একই খবর দুবার প্রক্রিয়া না করে
+  group: news-pipeline
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # কার্ড রেন্ডারিংয়ের জন্য ব্রাউজার লাগে। বাংলা ফন্ট আলাদা করে
+      # ইনস্টল করতে হয় না — templates-এ ফন্ট base64 হিসেবে এম্বেড করা,
+      # তাই সিস্টেমে কোন ফন্ট আছে তার উপর নির্ভরতা নেই।
+      # Ubuntu 24.04-এ `chromium-browser` স্ন্যাপ শিমে চলে যায়, যেটা
+      # হেডলেস মোডে ঠিকমতো চলে না। তাই deb প্যাকেজ `chromium` আগে।
+      - name: Chromium ইনস্টল
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq chromium
+          which chromium || which chromium-browser
+          chromium --version || true
+
+      - name: নির্ভরতা ইনস্টল
+        working-directory: pipeline
+        run: npm ci --no-audit --no-fund
+
+      - name: পাইপলাইন চালানো
+        working-directory: pipeline
+        env:
+          BROWSER_PATH: /usr/bin/chromium
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          FB_API_VERSION: v24.0
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          SITE_NAME: কথা ম্যাট্রিক্স
+          # রান-প্রতি অল্প পোস্ট, তাই ভেতরে দীর্ঘ অপেক্ষার দরকার নেই।
+          # cron নিজেই ব্যবধান তৈরি করে দিচ্ছে।
+          FACEBOOK_GAP_MINUTES: '3'
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            node src/run.js --dry-run --max=5
+          else
+            node src/run.js --max=5 --posts=2
+          fi
+
+      # রান ব্যর্থ হলে লগ দেখে কারণ বোঝার জন্য
+      - name: আউটপুট সংরক্ষণ
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-output-${{ github.run_number }}
+          path: |
+            output/index.json
+            output/state.json
+          retention-days: 7
+          if-no-files-found: ignore

@@ -1,0 +1,27 @@
+.env
+.env.local
+.env.*.local
+
+node_modules/
+.next/
+out/
+dist/
+build/
+
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# জেনারেট হওয়া কার্ড ইমেজ ও ক্যাশ
+output/
+.cache/
+
+# পাইপলাইনের তৈরি ছবি — আসল কপি Supabase Storage-এ থাকে, এগুলো
+# স্থানীয় অনুলিপি মাত্র। কমিট করলে রিপো প্রতি রানে ভারী হতে থাকত
+# (কয়েক দিনেই ১৮MB ছাড়িয়েছিল)।
+web/public/cards/
+web/public/images/
+
+.DS_Store
+Thumbs.db
