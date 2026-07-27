@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getCategories, getByCategory, relativeTime, thumbFor } from '../../../../lib/articles.js';
+import { getCategories, getByCategory, relativeTime, thumbFor, toBn } from '../../../../lib/articles.js';
 
 export const revalidate = 300;
 // নতুন ক্যাটাগরি প্রথমবার এলেও পেজটা যেন খোলে
@@ -24,7 +24,12 @@ export default async function CategoryPage({ params }) {
 
   return (
     <>
-      <h2 className="section-title">{name}</h2>
+      {/* হোমপেজের বিভাগ-শিরোনামের সঙ্গে এক চেহারা রাখা হলো, যাতে
+          "সব দেখুন" চেপে আসা পাঠক একই জায়গায় আছে বলে বোঝে */}
+      <div className="sec-head cat-head">
+        <h2>{name}</h2>
+        <span className="all">{toBn(articles.length)} টি খবর</span>
+      </div>
       <div className="grid">
         {articles.map((a) => (
           <article className="card" key={a.slug}>

@@ -49,6 +49,9 @@
   border-right: 1px solid var(--line);
   display: flex; flex-direction: column;
   position: sticky; top: 0; height: 100vh;
+  /* খুব খাটো পর্দায় মেনু + নাড়ি + অবস্থা একসঙ্গে ধরে না — তখন
+     নিচের অংশ কেটে যাওয়ার বদলে পুরো সাইডবারটাই গড়ায় */
+  overflow-y: auto;
 }
 
 .adm-brand {
@@ -57,7 +60,10 @@
 }
 .adm-brand img { height: 36px; }
 
-.adm-nav { padding: 14px 12px; display: flex; flex-direction: column; gap: 3px; flex: 1; overflow-y: auto; }
+/* মেনু আর ফাঁকা জায়গা দখল করে না — নিচের "নাড়ি" অংশটা করে।
+   তবে মেনু কখনো গুটিয়েও যায় না; পাতায় যাওয়ার একমাত্র রাস্তা এটাই,
+   জায়গা কম পড়লে গোটা সাইডবার গড়ায় (.adm-side)। */
+.adm-nav { padding: 14px 12px; display: flex; flex-direction: column; gap: 3px; flex: none; }
 
 .adm-nav a {
   display: flex; align-items: center; gap: 11px;
@@ -75,18 +81,59 @@
 .adm-nav a svg { width: 17px; height: 17px; flex: none; opacity: .85; }
 .adm-nav .sep { height: 1px; background: var(--line-soft); margin: 10px 13px; }
 
+/* ================================================================
+   সংবাদকক্ষের নাড়ি — মেনুর নিচের জায়গাটা এখানে কাজে লাগে।
+   সংখ্যা, সর্বশেষ প্রকাশের সময়, আর সদ্য যাওয়া খবরের তালিকা;
+   তালিকাটাই বাকি উচ্চতাটুকু নেয় বলে ফাঁকা জায়গা আর থাকে না।
+   ================================================================ */
+.adm-pulse {
+  /* বাকি উচ্চতাটুকু এই অংশই নেয় — মেনুর নিচের ফাঁকা জায়গা তাই আর থাকে না।
+     min-height না দিলে খাটো পর্দায় তালিকাটা কয়েক পিক্সেলের ফালি হয়ে
+     যেত; এর চেয়ে সাইডবার গড়ানোই ভালো। */
+  flex: 1 1 auto; min-height: 230px;
+  display: flex; flex-direction: column;
+  margin: 4px 12px 10px; padding: 13px 14px 0;
+  border-top: 1px solid var(--line-soft);
+}
+.adm-pulse .nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; flex: none; }
+.adm-pulse .nums b { display: block; font-size: 1.24rem; line-height: 1.3; font-weight: 700; letter-spacing: -.3px; }
+.adm-pulse .nums span { display: block; color: var(--ink-3); font-size: .73rem; line-height: 1.5; }
+
+.adm-pulse .last { display: flex; align-items: flex-start; gap: 8px; margin-top: 13px; flex: none; }
+.adm-pulse .last > div { min-width: 0; }
+.adm-pulse .last span { display: block; color: var(--ink-3); font-size: .78rem; line-height: 1.5; }
+.adm-pulse .last b { display: block; font-size: .89rem; font-weight: 600; line-height: 1.5; }
+.adm-pulse .dot { margin-top: 8px; }
+
+.adm-pulse .ttl { color: var(--ink-3); font-size: .76rem; margin: 14px 0 0; flex: none; }
+.adm-pulse .recent {
+  list-style: none; margin: 0; padding: 0;
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+}
+.adm-pulse .recent li { padding: 8px 0; border-top: 1px solid var(--line-soft); }
+.adm-pulse .recent li:first-child { border-top: none; }
+/* ২৪৮px চওড়ায় শিরোনাম দুই-তিন লাইনে ভাঙে — বাংলা লেখায় line-height
+   কম দিলে মাত্রা কেটে যায়, তাই ছোট মাপেও ১.৫৫ */
+.adm-pulse .recent a { display: block; font-size: .84rem; line-height: 1.55; color: var(--ink-2); }
+.adm-pulse .recent a:hover { color: var(--ink); }
+.adm-pulse .recent span { display: block; color: var(--ink-3); font-size: .73rem; margin-top: 2px; }
+
 /* অটোমেশনের অবস্থা সবসময় চোখের সামনে */
 .adm-status {
-  margin: 0 12px 12px; padding: 12px 14px;
+  /* নাড়ির অংশটা না আঁকা গেলেও (ডেটাবেস অচল) এই দুটো বাক্স নিচেই থাকে */
+  margin: auto 12px 12px; padding: 12px 14px;
   border-radius: var(--r); border: 1px solid var(--line);
   background: var(--surface-2);
   font-size: .87rem;
 }
 .adm-status .row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .adm-status .row:last-child { margin-bottom: 0; }
-.adm-status .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
-.adm-status .dot.on { background: var(--ok); box-shadow: 0 0 0 3px #3fb95026; }
-.adm-status .dot.off { background: var(--stop); box-shadow: 0 0 0 3px #f8514926; }
+.adm-status .dot, .adm-pulse .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.adm-status .dot.on, .adm-pulse .dot.on { background: var(--ok); box-shadow: 0 0 0 3px #3fb95026; }
+.adm-status .dot.off, .adm-pulse .dot.off { background: var(--stop); box-shadow: 0 0 0 3px #f8514926; }
+.adm-pulse .dot.warn { background: var(--warn); box-shadow: 0 0 0 3px #d2992226; }
+/* অটোমেশন বন্ধ থাকলে দেরিটা স্বাভাবিক — তখন নিরপেক্ষ বিন্দু */
+.adm-pulse .dot.idle { background: var(--ink-3); }
 .adm-status .lbl { color: var(--ink-3); }
 .adm-status .val { margin-left: auto; }
 
@@ -311,6 +358,17 @@
   .adm-nav a { padding: 8px 12px; white-space: nowrap; }
   .adm-nav a.on { box-shadow: inset 0 -3px 0 var(--brand); }
   .adm-nav .sep, .adm-status { display: none; }
+  /* সাইডবার এখানে একটা অনুভূমিক পট্টি — তাই নাড়ির অংশটাও এক সারিতে,
+     শিরোনামের তালিকা বাদ (ছোট পর্দায় সেটা পুরো পাতা ঠেলে দিত) */
+  .adm-pulse {
+    flex-direction: row; align-items: center; gap: 18px;
+    min-height: 0; margin: 0; padding: 6px 16px 12px; border-top: none;
+  }
+  .adm-pulse .ttl, .adm-pulse .recent { display: none; }
+  /* বাঁ দিক থেকেই সব — বাকি জায়গা ফাঁকা থাকুক, তবু লেখা ডান প্রান্তে
+     ঠেলে দিলে বাংলা পাতাটা উল্টো দিক থেকে পড়ার মতো দেখায় */
+  .adm-pulse .nums { flex: 0 1 250px; }
+  .adm-pulse .last { margin-top: 0; }
   .adm-me { border-top: 1px solid var(--line-soft); }
   .adm-head { height: auto; padding: 14px 16px; flex-wrap: wrap; }
   .adm-body { padding: 18px 16px 60px; }
