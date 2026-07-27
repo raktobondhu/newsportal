@@ -69,7 +69,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SITE_URL: ${{ vars.SITE_URL }}
-          SITE_NAME: কথা ম্যাট্রিক্স
+          SITE_NAME: লিখুন
           # রান-প্রতি অল্প পোস্ট, তাই ভেতরে দীর্ঘ অপেক্ষার দরকার নেই।
           # cron নিজেই ব্যবধান তৈরি করে দিচ্ছে।
           FACEBOOK_GAP_MINUTES: '3'

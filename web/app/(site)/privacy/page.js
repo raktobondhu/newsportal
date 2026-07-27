@@ -1,6 +1,8 @@
+import { SITE_NAME } from '../../../lib/site.js';
+
 export const metadata = {
   title: 'গোপনীয়তা নীতি',
-  description: 'কথা ম্যাট্রিক্স কী তথ্য সংগ্রহ করে, কী করে না — সরল ভাষায়।',
+  description: `${SITE_NAME} কী তথ্য সংগ্রহ করে, কী করে না — সরল ভাষায়।`,
 };
 
 export const revalidate = 86400;
@@ -23,7 +25,7 @@ export default function PrivacyPage() {
 
       <div className="content">
         <p>
-          কথা ম্যাট্রিক্স পড়তে কোনো অ্যাকাউন্ট লাগে না, নিবন্ধন করতে হয় না।
+          {SITE_NAME} পড়তে কোনো অ্যাকাউন্ট লাগে না, নিবন্ধন করতে হয় না।
           নিচে সরল ভাষায় লেখা আছে আমরা কী করি আর কী করি না।
         </p>
 

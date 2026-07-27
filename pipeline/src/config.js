@@ -36,7 +36,7 @@ const fileEnv = loadEnvFile(path.join(ROOT, '.env.local'));
 const env = (k, fallback = '') => process.env[k] ?? fileEnv[k] ?? fallback;
 
 export const config = {
-  siteName: env('SITE_NAME', 'কথা ম্যাট্রিক্স'),
+  siteName: env('SITE_NAME', 'লিখুন'),
   siteUrl: env('SITE_URL', '').replace(/\/$/, ''),
   brandAccent: env('BRAND_ACCENT', '#d11d4d'),
 

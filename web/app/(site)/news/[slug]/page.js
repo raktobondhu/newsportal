@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { SITE_NAME } from '../../../../lib/site.js';
 import { getAllArticles, getArticle, formatDate, thumbFor } from '../../../../lib/articles.js';
 
 // Next.js কেবল রুট সেগমেন্ট ফাইলেই এগুলো খোঁজে।
@@ -52,7 +53,7 @@ export default async function ArticlePage({ params }) {
     dateModified: a.publishedAt,
     articleSection: a.category,
     keywords: (a.tags || []).join(', '),
-    publisher: { '@type': 'Organization', name: 'কথা ম্যাট্রিক্স' },
+    publisher: { '@type': 'Organization', name: SITE_NAME },
   };
 
   return (

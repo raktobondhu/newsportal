@@ -1,4 +1,5 @@
 import './admin.css';
+import { SITE_NAME } from '../../lib/site.js';
 import { currentUser } from '../../lib/auth.js';
 import { adminQuery, getSettings } from '../../lib/admin-db.js';
 import { relativeTime, toBn } from '../../lib/articles.js';
@@ -6,7 +7,7 @@ import { logoutAction } from './actions.js';
 import SidebarNav from './sidebar-nav.js';
 
 export const metadata = {
-  title: 'অ্যাডমিন — কথা ম্যাট্রিক্স',
+  title: `অ্যাডমিন — ${SITE_NAME}`,
   robots: { index: false, follow: false }, // সার্চ ইঞ্জিনে যেন না ওঠে
 };
 
@@ -76,7 +77,7 @@ export default async function AdminLayout({ children }) {
     <div className="adm">
       <aside className="adm-side">
         <div className="adm-brand">
-          <img src="/logo.svg" alt="কথা ম্যাট্রিক্স" />
+          <img src="/logo.svg" alt={SITE_NAME} />
         </div>
 
         <SidebarNav role={user.role} />

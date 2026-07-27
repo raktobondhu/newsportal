@@ -1,4 +1,5 @@
 import { getCategories, toBn } from '../../lib/articles.js';
+import { SITE_NAME } from '../../lib/site.js';
 
 // নাহলে হেডারের ক্যাটাগরি তালিকা বিল্ডের সময়েই জমে যায়, নতুন
 // ক্যাটাগরি এলে আর দেখা যায় না।
@@ -18,9 +19,9 @@ export default async function SiteLayout({ children }) {
     <>
       <header className="site-header">
         <div className="wrap header-row">
-          <a className="logo" href="/" aria-label="কথা ম্যাট্রিক্স">
+          <a className="logo" href="/" aria-label={SITE_NAME}>
             {/* next/image নয় — SVG-তে অপ্টিমাইজেশনের কিছু নেই */}
-            <img src="/logo.svg" alt="কথা ম্যাট্রিক্স" />
+            <img src="/logo.svg" alt={SITE_NAME} />
           </a>
           <nav className="nav">
             <a href="/">সর্বশেষ</a>
@@ -43,7 +44,7 @@ export default async function SiteLayout({ children }) {
       <footer className="site-footer">
         <div className="wrap foot-top">
           <div className="foot-brand">
-            <img src="/logo.svg" alt="কথা ম্যাট্রিক্স" />
+            <img src="/logo.svg" alt={SITE_NAME} />
             <p>
               দেশ ও বিশ্বের নির্বাচিত সংবাদ, বাংলায়। সারাদিন ধরে নতুন খবর
               যোগ হয়, তাই একটু পরপরই পাতাটি বদলায়।
@@ -66,7 +67,7 @@ export default async function SiteLayout({ children }) {
 
         <div className="wrap foot-bottom">
           {/* সাইটের বাকি সব সংখ্যা বাংলায়, সালটাও তাই */}
-          <span>© {toBn(new Date().getFullYear())} কথা ম্যাট্রিক্স</span>
+          <span>© {toBn(new Date().getFullYear())} {SITE_NAME}</span>
           <span className="foot-meta">
             <a href="/privacy">গোপনীয়তা নীতি</a>
             <a href="/sitemap.xml">সাইটম্যাপ</a>

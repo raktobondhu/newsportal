@@ -1,4 +1,5 @@
 import './globals.css';
+import { SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION, SITE_URL } from '../lib/site.js';
 
 /**
  * সর্বোচ্চ স্তরের লেআউট — কেবল html/body আর সাধারণ স্টাইল।
@@ -11,14 +12,14 @@ import './globals.css';
  * (site)/layout.js এ নেওয়া হয়েছে; অ্যাডমিন তার নিজের খোলস আঁকে।
  */
 export const metadata = {
-  metadataBase: process.env.SITE_URL ? new URL(process.env.SITE_URL) : undefined,
+  metadataBase: SITE_URL ? new URL(SITE_URL) : undefined,
   title: {
-    default: 'কথা ম্যাট্রিক্স — সর্বশেষ বাংলা সংবাদ',
-    template: '%s | কথা ম্যাট্রিক্স',
+    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    template: `%s | ${SITE_NAME}`,
   },
-  description: 'দেশ ও বিশ্বের নির্বাচিত সংবাদ, বাংলায় — কথা ম্যাট্রিক্স।',
+  description: SITE_DESCRIPTION,
   openGraph: {
-    siteName: 'কথা ম্যাট্রিক্স',
+    siteName: SITE_NAME,
     locale: 'bn_BD',
     type: 'website',
   },
