@@ -67,7 +67,10 @@ export default async function SiteLayout({ children }) {
         <div className="wrap foot-bottom">
           {/* সাইটের বাকি সব সংখ্যা বাংলায়, সালটাও তাই */}
           <span>© {toBn(new Date().getFullYear())} কথা ম্যাট্রিক্স</span>
-          <a href="/sitemap.xml">সাইটম্যাপ</a>
+          <span className="foot-meta">
+            <a href="/privacy">গোপনীয়তা নীতি</a>
+            <a href="/sitemap.xml">সাইটম্যাপ</a>
+          </span>
         </div>
       </footer>
     </>
