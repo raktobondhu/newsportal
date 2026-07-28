@@ -344,6 +344,10 @@ export async function deleteAdAction(id) {
     const objectName = url.split('/storage/v1/object/public/ads/')[1];
     if (objectName) {
       const base = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
+      // Content-Type ইচ্ছাকৃতভাবে দেওয়া হয়নি। 'application/json' বসালে
+      // Storage 400 দেয় — "Body cannot be empty when content-type is set
+      // to 'application/json'" — আর ছবিটা রয়ে যায়। সারিটা তখনো মুছত,
+      // তাই প্যানেলে সব ঠিক দেখাত অথচ ছবির পাবলিক URL খোলাই থাকত।
       await fetch(`${base}/storage/v1/object/ads/${objectName}`, {
         method: 'DELETE',
         headers: {
