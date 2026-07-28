@@ -58,7 +58,15 @@
   padding: 20px 20px 16px;
   border-bottom: 1px solid var(--line-soft);
 }
-.adm-brand img { height: 36px; }
+/* লোগোর নেভি প্রান্তটা সাদা পটভূমির জন্য বানানো — এই প্যানেল সবসময়
+   গাঢ়, তাই সেখানে অক্ষরগুলো মিশে যেত। brightness রঙ না হারিয়ে তুলে
+   দেয়। সাইটে একই সমাধান, তবে সেখানে কেবল গাঢ় থিমে (globals.css)। */
+.adm-brand img { height: 30px; display: block; filter: brightness(1.9) saturate(.9); }
+/* সাইডবার সরু, তাই স্লোগান লোগোর পাশে নয় — নিচে, ছোট হরফে */
+.adm-slogan {
+  display: block; margin-top: 7px;
+  font-size: .78rem; color: var(--ink-3); line-height: 1.5;
+}
 
 /* মেনু আর ফাঁকা জায়গা দখল করে না — নিচের "নাড়ি" অংশটা করে।
    তবে মেনু কখনো গুটিয়েও যায় না; পাতায় যাওয়ার একমাত্র রাস্তা এটাই,
@@ -323,7 +331,7 @@
   width: 100%; max-width: 372px; background: var(--surface);
   border: 1px solid var(--line); border-radius: 18px; padding: 34px;
 }
-.adm-login img { height: 44px; margin: 0 auto 10px; display: block; }
+.adm-login img { height: 36px; margin: 0 auto 10px; display: block; filter: brightness(1.9) saturate(.9); }
 .adm-login .ttl { text-align: center; color: var(--ink-3); font-size: .88rem; margin-bottom: 26px; }
 
 .empty { color: var(--ink-3); text-align: center; padding: 56px 20px; }

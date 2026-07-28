@@ -35,10 +35,14 @@
      তাই পেছনে হালকা গাঢ় প্লেট আর drop-shadow */
   .logo {
     position: absolute; top: 46px; left: 52px;
-    height: 84px; width: auto;
+    /* ৮৪ → ৫৬: লোগোর SVG এখন লেখা বরাবর কাটা, আগের মতো ফাঁকা
+       ক্যানভাসসহ নয় (দেখুন card-text.html) */
+    height: 56px; width: auto;
     padding: 12px 20px; border-radius: 12px;
     background: rgba(8,12,22,.42);
-    filter: drop-shadow(0 3px 10px rgba(0,0,0,.55));
+    /* brightness — লোগোর নেভি প্রান্ত গাঢ় প্লেটে মিশে যায়
+       (ব্যাখ্যা card-text.html-এ) */
+    filter: brightness(2.2) saturate(.85) drop-shadow(0 3px 10px rgba(0,0,0,.55));
   }
 
   .content {
@@ -57,13 +61,13 @@
     font-weight: bold; text-shadow: 0 3px 22px rgba(0,0,0,.75);
   }
 
-  /* এখানে কেবল তারিখটাই থাকে। space-between রাখলে একমাত্র সন্তানটি
-     বাঁয়ে চলে যেত আর ডানপাশ ফাঁকা পড়ে থাকত — flex-end ডানেই ধরে রাখে। */
+  /* বাঁয়ে স্লোগান, ডানে তারিখ */
   .meta {
     margin-top: 30px; padding-top: 24px;
     border-top: 2px solid rgba(255,255,255,.22);
-    display: flex; justify-content: flex-end; align-items: center;
+    display: flex; justify-content: space-between; align-items: center;
     font-size: 27px; opacity: .82;
+    text-shadow: 0 2px 10px rgba(0,0,0,.6);
   }
 </style>
 
@@ -76,6 +80,7 @@
   <div class="chip">{{CATEGORY}}</div>
   <h1>{{HEADLINE}}</h1>
   <div class="meta">
+    <span>{{SLOGAN}}</span>
     <span>{{DATE}}</span>
   </div>
 </div>

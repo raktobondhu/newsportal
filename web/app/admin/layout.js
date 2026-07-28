@@ -1,5 +1,5 @@
 import './admin.css';
-import { SITE_NAME } from '../../lib/site.js';
+import { SITE_NAME, SITE_SLOGAN } from '../../lib/site.js';
 import { currentUser } from '../../lib/auth.js';
 import { adminQuery, getSettings } from '../../lib/admin-db.js';
 import { relativeTime, toBn } from '../../lib/articles.js';
@@ -78,6 +78,7 @@ export default async function AdminLayout({ children }) {
       <aside className="adm-side">
         <div className="adm-brand">
           <img src="/logo.svg" alt={SITE_NAME} />
+          <span className="adm-slogan">{SITE_SLOGAN}</span>
         </div>
 
         <SidebarNav role={user.role} />

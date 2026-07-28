@@ -231,6 +231,7 @@ export async function renderCard({ headline, category = 'সংবাদ', sourc
     '{{HEADLINE}}': escapeHtml(headline),
     '{{SOURCE}}': escapeHtml(source),
     '{{DATE}}': bengaliDate(),
+    '{{SLOGAN}}': escapeHtml(config.siteSlogan),
     '{{ACCENT}}': config.brandAccent,
     '{{FONTSIZE}}': String(headlineFontSize(headline)),
   };

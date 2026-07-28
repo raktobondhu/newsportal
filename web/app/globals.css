@@ -31,6 +31,15 @@
     --soft: #12161c;
     --shadow: 0 1px 3px rgba(0, 0, 0, .4);
   }
+
+  /* লোগোর গ্রেডিয়েন্ট টিল থেকে গাঢ় নেভিতে নামে — সাদা পটভূমির জন্য
+     বানানো। গাঢ় থিমে ওই নেভি প্রান্তটা পটভূমিতে মিশে যায়, নামের শেষ
+     অক্ষরগুলো হারিয়ে যায়। brightness পুরো গ্রেডিয়েন্টটাকে তুলে দেয়,
+     ফলে ব্র্যান্ডের রঙ থাকে অথচ পড়া যায়।
+     হালকা থিমে ফিল্টারটা লাগে না, তাই এখানেই — বাইরে নয়।
+     ফেসবুক কার্ডেও একই সমস্যা, একই সমাধান (templates/card-*.html)। */
+  .logo img,
+  .foot-brand img { filter: brightness(1.9) saturate(.9); }
 }
 
 * { box-sizing: border-box; }
@@ -66,8 +75,17 @@ h1, h2, h3 { overflow-wrap: break-word; }
 
 /* লোগো কখনো চাপে না — flex ডিফল্টে সবাইকে সংকুচিত করে, আর তাতে
    ১০টি বিভাগের মেনু লোগোকে চেপে বিকৃত করে দিত */
-.logo { flex: none; }
-.logo img { height: 46px; width: auto; }
+.logo { flex: none; display: flex; align-items: center; gap: 14px; }
+.logo img { height: 40px; width: auto; }
+
+/* স্লোগানটা লোগোর অংশ নয়, তাই লোগোর সমান জোর দেওয়া হয়নি — ছোট,
+   হালকা, আর একটা পাতলা দাগে আলাদা করা। দাগটা না থাকলে দূর থেকে
+   মনে হতো এটাও মেনুর একটা আইটেম। */
+.logo-slogan {
+  padding-right: 0; padding-left: 14px;
+  border-left: 1px solid var(--line);
+  font-size: .82rem; color: var(--ink-3); white-space: nowrap;
+}
 
 /* মেনু বাকি জায়গাটুকু নেয়; না ধরলে গড়ায় (স্ক্রলবার লুকানো)।
    বিভাগ বাড়লে বা পর্দা ছোট হলে এটাই স্বাভাবিক আচরণ — নাম কেটে
@@ -266,7 +284,11 @@ h1, h2, h3 { overflow-wrap: break-word; }
   .home-hero { grid-template-columns: 1fr; gap: 26px; margin: 20px 0 32px; }
   .sec-grid { grid-template-columns: 1fr; gap: 22px; }
   .header-row { height: 64px; gap: 14px; }
-  .logo img { height: 38px; }
+  .logo img { height: 32px; }
+  /* সরু পর্দায় স্লোগান বাদ। রাখলে লোগো আর মেনুর মাঝে বসে মেনুকে
+     ঠেলে দিত — স্লোগানের চেয়ে বিভাগে পৌঁছানো জরুরি। ফুটারে তো
+     স্লোগানটা থাকছেই। */
+  .logo-slogan { display: none; }
 }
 
 @media (max-width: 560px) {
@@ -298,8 +320,13 @@ h1, h2, h3 { overflow-wrap: break-word; }
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
   gap: 36px; padding-top: 40px; padding-bottom: 30px;
 }
-.foot-brand img { height: 44px; margin-bottom: 14px; }
+.foot-brand img { height: 38px; margin-bottom: 12px; }
 .foot-brand p { margin: 0; max-width: 44ch; line-height: 1.85; }
+/* ফুটারে স্লোগানটাই ব্র্যান্ডের কণ্ঠ, তাই বর্ণনার চেয়ে একটু জোরালো।
+   ক্লাসের সাথে .foot-brand জুড়ে দেওয়া হয়েছে যাতে উপরের
+   `.foot-brand p { margin: 0 }` নিয়মটাকে হারাতে পারে — নইলে
+   !important লাগত। */
+.foot-brand .foot-slogan { color: var(--fg); font-size: 1.02rem; margin-bottom: 10px; }
 .foot-col b { display: block; color: var(--fg); font-size: .98rem; margin-bottom: 10px; }
 /* বিভাগের সংখ্যা বদলায়, তাই স্থির কলাম নয় — জায়গা বুঝে ভাগ হয় */
 .foot-links { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr)); gap: 2px 20px; }

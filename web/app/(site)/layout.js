@@ -1,5 +1,5 @@
 import { getCategories, toBn } from '../../lib/articles.js';
-import { SITE_NAME } from '../../lib/site.js';
+import { SITE_NAME, SITE_SLOGAN } from '../../lib/site.js';
 
 // নাহলে হেডারের ক্যাটাগরি তালিকা বিল্ডের সময়েই জমে যায়, নতুন
 // ক্যাটাগরি এলে আর দেখা যায় না।
@@ -22,6 +22,8 @@ export default async function SiteLayout({ children }) {
           <a className="logo" href="/" aria-label={SITE_NAME}>
             {/* next/image নয় — SVG-তে অপ্টিমাইজেশনের কিছু নেই */}
             <img src="/logo.svg" alt={SITE_NAME} />
+            {/* সরু পর্দায় CSS একে সরিয়ে দেয় — মেনুর জায়গা আগে */}
+            <span className="logo-slogan">{SITE_SLOGAN}</span>
           </a>
           <nav className="nav">
             <a href="/">সর্বশেষ</a>
@@ -45,6 +47,7 @@ export default async function SiteLayout({ children }) {
         <div className="wrap foot-top">
           <div className="foot-brand">
             <img src="/logo.svg" alt={SITE_NAME} />
+            <p className="foot-slogan">{SITE_SLOGAN}</p>
             <p>
               দেশ ও বিশ্বের নির্বাচিত সংবাদ, বাংলায়। সারাদিন ধরে নতুন খবর
               যোগ হয়, তাই একটু পরপরই পাতাটি বদলায়।

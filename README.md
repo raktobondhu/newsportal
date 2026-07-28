@@ -42,6 +42,7 @@ cd pipeline && npm install && node test/setup-buckets.mjs
 **৪. `.env.local`** (রিপোর্টে নেই, নিজে বানাতে হবে)
 ```
 SITE_NAME=লিখুন
+SITE_SLOGAN=আপনার কন্ঠ, আমাদের কলম
 SITE_URL=https://your-domain.com
 BRAND_ACCENT=#d11d4d
 

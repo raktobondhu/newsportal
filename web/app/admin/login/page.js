@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react';
 import { loginAction } from '../actions.js';
-import { SITE_NAME } from '../../../lib/site.js';
+import { SITE_NAME, SITE_SLOGAN } from '../../../lib/site.js';
 
 export default function LoginPage() {
   const [state, formAction, pending] = useActionState(loginAction, {});
@@ -11,6 +11,7 @@ export default function LoginPage() {
     <div className="adm-login">
       <form className="box" action={formAction}>
         <img src="/logo.svg" alt={SITE_NAME} />
+        <div className="ttl">{SITE_SLOGAN}</div>
 
         {state?.error && <div className="msg err">{state.error}</div>}
 

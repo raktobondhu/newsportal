@@ -20,9 +20,17 @@
   }
 
   /* টেক্সট কার্ডে ব্যাকগ্রাউন্ড নিয়ন্ত্রণে আছে, তাই প্লেট লাগে না */
+  /* উচ্চতা ৮৪ থেকে ৫৬ — লোগোর SVG আগে ৯৬০x৫৪০ ক্যানভাসে ছিল, লেখাটা
+     তার মাঝে ছোট হয়ে বসত। এখন ফাইলটা লেখা বরাবর কাটা, তাই ৮৪px দিলে
+     লোগো দেড়গুণ বড় দেখাত। */
+  /* লোগোর গ্রেডিয়েন্ট টিল থেকে গাঢ় নেভিতে নামে। কার্ডের পটভূমিও গাঢ়
+     নেভি, ফলে "খুন" অংশটা পটভূমিতে মিশে যেত — দূর থেকে নামটা "লি"
+     পড়াত। brightness গ্রেডিয়েন্টটাকে তুলে দেয়, তাই ব্র্যান্ডের রঙ
+     থাকে অথচ পড়া যায়। সাদা করে দিলে পড়া যেত বটে, রঙটা হারাত। */
   .logo {
     position: absolute; top: 46px; left: 60px; z-index: 2;
-    height: 84px; width: auto;
+    height: 56px; width: auto;
+    filter: brightness(2.2) saturate(.85);
   }
 
   .content {
@@ -38,12 +46,12 @@
 
   h1 { margin: 0; font-size: {{FONTSIZE}}px; line-height: 1.36; font-weight: bold; }
 
-  /* এখানে কেবল তারিখটাই থাকে। space-between রাখলে একমাত্র সন্তানটি
-     বাঁয়ে চলে যেত আর ডানপাশ ফাঁকা পড়ে থাকত — flex-end ডানেই ধরে রাখে। */
+  /* বাঁয়ে স্লোগান, ডানে তারিখ — দুই প্রান্তে দুটো, তাই space-between।
+     আগে কেবল তারিখ ছিল বলে flex-end লাগত। */
   .meta {
     margin-top: 34px; padding-top: 24px;
     border-top: 2px solid rgba(255,255,255,.22);
-    display: flex; justify-content: flex-end; align-items: center;
+    display: flex; justify-content: space-between; align-items: center;
     font-size: 27px; opacity: .8;
   }
 </style>
@@ -54,6 +62,7 @@
   <div class="chip">{{CATEGORY}}</div>
   <h1>{{HEADLINE}}</h1>
   <div class="meta">
+    <span>{{SLOGAN}}</span>
     <span>{{DATE}}</span>
   </div>
 </div>

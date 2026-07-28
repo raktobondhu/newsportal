@@ -37,6 +37,8 @@ const env = (k, fallback = '') => process.env[k] ?? fileEnv[k] ?? fallback;
 
 export const config = {
   siteName: env('SITE_NAME', 'লিখুন'),
+  // কার্ডে লোগোর নিচে বসে। ওয়েবের দিকে একই মান web/lib/site.js-এ।
+  siteSlogan: env('SITE_SLOGAN', 'আপনার কন্ঠ, আমাদের কলম'),
   siteUrl: env('SITE_URL', '').replace(/\/$/, ''),
   brandAccent: env('BRAND_ACCENT', '#d11d4d'),
 
