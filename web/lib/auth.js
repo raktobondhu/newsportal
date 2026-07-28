@@ -123,6 +123,11 @@ export const CAN = {
   deleteArticles: ['admin'],
   manageUsers: ['admin'],
   manageSettings: ['admin'],
+  // বিজ্ঞাপন manager-ও সামলাতে পারেন — এটি রোজকার কাজ, আর প্রতিবার
+  // অ্যাডমিনকে ডাকতে হলে বিজ্ঞাপন সময়মতো বসানো কঠিন হতো। তবে
+  // Analytics/AdSense-এর আইডি বদলানো manageSettings-এর অধীনেই থাকল —
+  // ওগুলো টাকা ও মালিকানার সঙ্গে জড়িত।
+  manageAds: ['admin', 'manager'],
 };
 
 export async function requireUser() {

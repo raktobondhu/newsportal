@@ -19,7 +19,17 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-for (const id of ['cards', 'images']) {
+const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+
+const BUCKETS = {
+  cards: { types: IMAGE_TYPES, limit: 5242880 },
+  images: { types: IMAGE_TYPES, limit: 5242880 },
+  // বিজ্ঞাপনে GIF-ও লাগে — ব্যানার প্রায়ই অ্যানিমেটেড হয়। SVG ইচ্ছাকৃতভাবে
+  // বাদ: SVG-র ভেতরে <script> বসানো যায়, আর বাকেটটি পাবলিক।
+  ads: { types: [...IMAGE_TYPES, 'image/gif'], limit: 3145728 },
+};
+
+for (const [id, spec] of Object.entries(BUCKETS)) {
   const res = await fetch(`${config.supabase.url}/storage/v1/bucket`, {
     method: 'POST',
     headers,
@@ -27,8 +37,8 @@ for (const id of ['cards', 'images']) {
       id,
       name: id,
       public: true, // সাইট ও ফেসবুক দুটোই সরাসরি URL থেকে ছবি নেয়
-      file_size_limit: 5242880,
-      allowed_mime_types: ['image/png', 'image/jpeg', 'image/webp'],
+      file_size_limit: spec.limit,
+      allowed_mime_types: spec.types,
     }),
   });
   const body = await res.json().catch(() => ({}));
@@ -40,7 +50,7 @@ const list = await fetch(`${config.supabase.url}/storage/v1/bucket`, { headers }
 const buckets = await list.json();
 console.log('\nবর্তমান বাকেট:', buckets.map((b) => `${b.name} (public=${b.public})`).join(', '));
 
-const missing = ['cards', 'images'].filter((n) => !buckets.some((b) => b.name === n && b.public));
+const missing = Object.keys(BUCKETS).filter((n) => !buckets.some((b) => b.name === n && b.public));
 if (missing.length) {
   console.error(`\n⚠️ এখনো ঠিক নেই: ${missing.join(', ')} — পাবলিক বাকেট হিসেবে থাকতে হবে।`);
   process.exit(1);

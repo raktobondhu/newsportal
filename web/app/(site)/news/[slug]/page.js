@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { SITE_NAME } from '../../../../lib/site.js';
 import { getAllArticles, getArticle, formatDate, thumbFor } from '../../../../lib/articles.js';
+import AdSlot from '../../ad-slot.js';
 
 // Next.js কেবল রুট সেগমেন্ট ফাইলেই এগুলো খোঁজে।
 export const revalidate = 300;
@@ -75,11 +76,25 @@ export default async function ArticlePage({ params }) {
 
       {a.summary && <div className="summary">{a.summary}</div>}
 
+      <AdSlot placement="article_top" />
+
+      {/*
+        মাঝের বিজ্ঞাপনটি অনুচ্ছেদের ফাঁকে, ঠিক মাঝখানে — তবে লেখা যথেষ্ট
+        লম্বা হলেই। ছোট খবরে (৪ অনুচ্ছেদের কম) বসালে শিরোনাম আর
+        বিজ্ঞাপনের মাঝে পড়ার মতো কিছুই থাকত না।
+      */}
       <div className="content">
         {paragraphs.map((p, i) => (
-          <p key={i}>{p}</p>
+          <div key={i}>
+            <p>{p}</p>
+            {paragraphs.length >= 4 && i === Math.floor(paragraphs.length / 2) - 1 && (
+              <AdSlot placement="article_mid" />
+            )}
+          </div>
         ))}
       </div>
+
+      <AdSlot placement="article_bottom" />
 
       {a.tags?.length > 0 && (
         <div className="tags">

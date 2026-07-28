@@ -23,6 +23,7 @@ const ICONS = {
   settings: <Icon d={<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z" /></>} />,
   log: <Icon d={<><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>} />,
   site: <Icon d={<><path d="M14 4h6v6" /><path d="M20 4l-8 8" /><path d="M18 14v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5" /></>} />,
+  ads: <Icon d={<><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M8 15l3-4 2.5 3 1.5-2 2 3" /><circle cx="9" cy="9.5" r="1.2" /></>} />,
 };
 
 export default function SidebarNav({ role }) {
@@ -31,6 +32,8 @@ export default function SidebarNav({ role }) {
   const items = [
     { href: '/admin', icon: 'dashboard', label: 'ড্যাশবোর্ড', exact: true },
     { href: '/admin/articles', icon: 'news', label: 'খবর' },
+    // বিজ্ঞাপন manager-ও সামলাতে পারেন, তাই রোল যাচাইয়ের বাইরে
+    { href: '/admin/ads', icon: 'ads', label: 'বিজ্ঞাপন' },
     ...(role === 'admin'
       ? [
           { href: '/admin/users', icon: 'users', label: 'ব্যবহারকারী' },

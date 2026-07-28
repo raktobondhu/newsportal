@@ -1,4 +1,5 @@
 import { getAllArticles, relativeTime, thumbFor, toBn } from '../../lib/articles.js';
+import AdSlot from './ad-slot.js';
 
 // Next.js কেবল রুট সেগমেন্ট ফাইলেই revalidate খোঁজে — lib থেকে রপ্তানি
 // করলে নীরবে উপেক্ষা করে, আর পেজ চিরস্থায়ীভাবে স্ট্যাটিক থেকে যায়।
@@ -189,11 +190,19 @@ export default async function Home() {
         )}
       </section>
 
+      <AdSlot placement="home_top" />
+
       {(sections.length > 0 || latest.length > 0) && (
         <div className="home-cols">
           <div className="home-main">
-            {sections.map((s) => (
-              <Section key={s.name} name={s.name} items={s.items} />
+            {sections.map((s, i) => (
+              <div key={s.name}>
+                <Section name={s.name} items={s.items} />
+                {/* বিভাগগুলোর ঠিক মাঝখানে — উপরে বা নিচে নয়। পাঠক
+                    তখন অন্তত একটি বিভাগ পড়ে ফেলেছেন, আর নিচে আরও
+                    আছে বলে বিজ্ঞাপনটাকে পাতার শেষ বলে ভুল করেন না। */}
+                {i === Math.floor(sections.length / 2) - 1 && <AdSlot placement="home_mid" />}
+              </div>
             ))}
           </div>
 
@@ -213,6 +222,9 @@ export default async function Home() {
                   ))}
                 </ul>
               </div>
+              {/* রেলটি sticky — বিজ্ঞাপনটি তার ভেতরে রাখলে পাঠক
+                  স্ক্রল করার সময়ও চোখের সামনে থাকে */}
+              <AdSlot placement="sidebar" />
             </aside>
           )}
         </div>
@@ -228,6 +240,8 @@ export default async function Home() {
           </div>
         </>
       )}
+
+      <AdSlot placement="home_bottom" />
     </>
   );
 }

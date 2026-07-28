@@ -266,6 +266,10 @@
 .badge.warn { color: #e8c26a; border-color: #4d3c14; background: var(--warn-bg); }
 .badge.stop { color: #ff9d97; border-color: #5c2321; background: var(--stop-bg); }
 .badge.role { color: #a5c8ff; border-color: #23395c; background: #101a2b; }
+/* wait — চালু করা আছে, কিন্তু শুরুর তারিখ আসেনি। idle — জায়গাটা ফাঁকা।
+   দুটোই "ভুল কিছু হয়নি" বোঝায়, তাই লাল নয়। */
+.badge.wait { color: #9fb4d0; border-color: #2a3a4d; background: #121a24; }
+.badge.idle { color: var(--ink-3); }
 
 /* ================================================================
    বোতাম
@@ -283,6 +287,10 @@
 .btn.stop { color: #ff9d97; border-color: #5c2321; background: var(--stop-bg); }
 .btn.stop:hover { background: #3a1a1c; }
 .btn.tiny { padding: 5px 11px; font-size: .82rem; border-radius: 7px; }
+/* danger — যা ফিরিয়ে আনা যায় না। .stop এর চেয়ে জোরালো, কারণ
+   "বন্ধ করা" আর "মুছে ফেলা" এক জিনিস নয়। */
+.btn.danger { color: #ff9d97; border-color: #7a2a27; background: #2a1214; }
+.btn.danger:hover { background: #45191c; border-color: #9c3833; }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 .btn svg { width: 14px; height: 14px; }
 /* কাজের বোতামগুলো এক সারিতেই রাখি — ভেঙে দ্বিতীয় লাইনে গেলে সারির
@@ -381,4 +389,110 @@
   .adm-head { height: auto; padding: 14px 16px; flex-wrap: wrap; }
   .adm-body { padding: 18px 16px 60px; }
   .tbl th:nth-child(3), .tbl td:nth-child(3) { display: none; }
+}
+
+/* ================================================================
+   বিজ্ঞাপন
+   ================================================================ */
+/* তালিকা বাঁয়ে, নতুন যোগ করার ফর্ম ডানে — বিজ্ঞাপন বসানোর সময়
+   আগেরগুলো চোখের সামনে থাকে, তাই একই জায়গায় দুবার বসে না */
+.ad-cols {
+  display: grid; grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 26px; align-items: start; margin-bottom: 34px;
+}
+.ad-new {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-lg); padding: 20px 22px;
+  position: sticky; top: 20px;
+}
+.ad-new h2, .ad-list h2 { margin-top: 0; }
+
+.ad-group { margin-bottom: 22px; }
+.ad-group h3 {
+  font-size: .88rem; color: var(--ink-3); font-weight: 600;
+  margin: 0 0 9px; padding-bottom: 7px; border-bottom: 1px solid var(--line-soft);
+}
+
+.ad-row {
+  display: flex; align-items: center; gap: 15px;
+  padding: 13px 16px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--r-lg); margin-bottom: 9px;
+}
+/* ছবিটা চেকার্ড পটভূমিতে — স্বচ্ছ PNG/GIF হলে কোথায় ফাঁকা আছে বোঝা যায় */
+.ad-thumb {
+  flex: none; width: 128px; height: 62px; border-radius: 8px; overflow: hidden;
+  border: 1px solid var(--line); background:
+    repeating-conic-gradient(#20262f 0% 25%, #171c24 0% 50%) 50% / 14px 14px;
+  display: grid; place-items: center;
+}
+.ad-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+.ad-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.ad-info b { display: flex; align-items: center; gap: 9px; font-weight: 600; }
+.ad-info span { color: var(--ink-3); font-size: .84rem; }
+.ad-info a { color: var(--ink-2); }
+.ad-info a:hover { color: var(--brand); }
+
+.ad-acts { display: flex; gap: 6px; flex: none; }
+
+/* minmax(0,1fr) — নাহলে datetime-local ইনপুটের নিজস্ব ন্যূনতম চওড়া
+   (ব্রাউজারের বসানো, ~২০০px) কলামকে ঠেলে বড় করে দেয়, আর সরু
+   সাইডবারে "শেষ" ঘরটা ডান দিক দিয়ে বেরিয়ে যায় */
+.ad-form-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.ad-form-row .field { min-width: 0; }
+.ad-form-row input { width: 100%; min-width: 0; }
+.ad-form input[type="file"] { padding: 9px 11px; font-size: .84rem; }
+.ad-preview {
+  margin-top: 10px; padding: 10px; border-radius: 9px;
+  border: 1px dashed var(--line); background: var(--bg);
+  display: grid; place-items: center;
+}
+.ad-preview img { max-width: 100%; max-height: 150px; }
+
+/* জায়গার সারসংক্ষেপ — কোনটা ফাঁকা পড়ে আছে এক নজরে */
+.ad-places { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 11px; }
+.ad-place {
+  padding: 14px 16px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--r-lg);
+  display: flex; flex-direction: column; gap: 6px; align-items: flex-start;
+}
+.ad-place b { font-weight: 600; font-size: .92rem; }
+.ad-place span:not(.badge) { color: var(--ink-3); font-size: .8rem; line-height: 1.5; }
+
+/* ---------- লেখার সেটিং ---------- */
+.ctl-text { align-items: flex-start; }
+.ctl-text .info { padding-top: 6px; }
+.ctl-input { flex: none; width: 300px; }
+.ctl-input input {
+  width: 100%; padding: 9px 12px; border-radius: 8px;
+  background: var(--bg); border: 1px solid var(--line);
+  color: var(--ink); font: inherit; font-size: .88rem;
+}
+.ctl-input input:focus { outline: none; border-color: var(--brand); }
+.ctl-input input.bad { border-color: #7a2a27; }
+.bad-text { color: #ff9d97; }
+.ctl-text .btn { margin-top: 3px; }
+
+.slot-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 11px; margin-bottom: 14px;
+}
+.slot-row { display: flex; flex-direction: column; gap: 6px; }
+.slot-row span { font-size: .84rem; color: var(--ink-2); }
+.slot-row input {
+  padding: 9px 12px; border-radius: 8px; background: var(--bg);
+  border: 1px solid var(--line); color: var(--ink); font: inherit; font-size: .88rem;
+}
+.slot-row input:focus { outline: none; border-color: var(--brand); }
+.slot-grid .btn, .slot-grid .msg { grid-column: 1 / -1; justify-self: start; }
+
+@media (max-width: 1000px) {
+  .ad-cols { grid-template-columns: 1fr; }
+  .ad-new { position: static; }
+}
+@media (max-width: 620px) {
+  .ad-row { flex-wrap: wrap; }
+  .ad-thumb { width: 92px; height: 48px; }
+  .ctl-text { flex-direction: column; }
+  .ctl-input { width: 100%; }
 }

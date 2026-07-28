@@ -1,5 +1,8 @@
 import { getCategories, toBn } from '../../lib/articles.js';
 import { SITE_NAME, SITE_SLOGAN } from '../../lib/site.js';
+import { getPublicSettings } from '../../lib/public-settings.js';
+import { GoogleAnalytics, AdSenseScript } from '../third-party.js';
+import AdSlot from './ad-slot.js';
 
 // নাহলে হেডারের ক্যাটাগরি তালিকা বিল্ডের সময়েই জমে যায়, নতুন
 // ক্যাটাগরি এলে আর দেখা যায় না।
@@ -13,7 +16,7 @@ export default async function SiteLayout({ children }) {
   // সব বিভাগই মেনুতে থাকে। আগে ৮টিতে সীমিত ছিল, তাতে স্বাস্থ্য ও
   // অপরাধ বাদ পড়ে যেত — অথচ ওই বিভাগে খবর প্রকাশ হচ্ছে, পাঠক শুধু
   // সেখানে পৌঁছানোর পথ পাচ্ছিলেন না।
-  const categories = await getCategories();
+  const [categories, settings] = await Promise.all([getCategories(), getPublicSettings()]);
 
   return (
     <>
@@ -36,7 +39,11 @@ export default async function SiteLayout({ children }) {
         </div>
       </header>
 
+      <AdSlot placement="header_top" className="wrap" />
+
       <main className="wrap">{children}</main>
+
+      <AdSlot placement="footer" className="wrap" />
 
       {/*
         ঠিকানা, ফোন, সামাজিক মাধ্যমের লিংক বা প্রতিষ্ঠানের নিবন্ধন —
@@ -77,6 +84,10 @@ export default async function SiteLayout({ children }) {
           </span>
         </div>
       </footer>
+
+      {/* পাতার শেষে — স্ক্রিপ্টগুলো খবরের চেয়ে পরে নামুক */}
+      <GoogleAnalytics id={settings.google_analytics_id} />
+      <AdSenseScript publisherId={settings.adsense_publisher_id} />
     </>
   );
 }

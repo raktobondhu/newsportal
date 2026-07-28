@@ -1,8 +1,10 @@
 'use server';
 
+import crypto from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { adminQuery, setSetting, logAction } from '../../lib/admin-db.js';
+import { PLACEMENT_IDS } from '../../lib/ads.js';
 import {
   authenticate,
   createSession,
@@ -186,6 +188,178 @@ export async function updateSettingAction(key, value) {
   await logAction(user.email, 'settings', key, { value });
   revalidatePath('/admin/settings');
   revalidatePath('/admin');
+}
+
+// ---------------------------------------------------------------
+// বিজ্ঞাপন
+// ---------------------------------------------------------------
+
+/**
+ * বিজ্ঞাপন বসালে বা বদলালে যে পাতাগুলো নতুন করে আঁকতে হয়।
+ *
+ * পাতাগুলো ISR — ৬০ সেকেন্ড পর এমনিতেই নতুন হতো। কিন্তু বিজ্ঞাপন
+ * বসিয়ে সঙ্গে সঙ্গে সাইটে গিয়ে দেখতে না পেলে মনে হয় কাজ করেনি, আর
+ * ক্লায়েন্টকে দেখানোর সময় সেটা বিব্রতকর।
+ *
+ * '/news/[slug]' — টাইপ ধরে সব খবরের পাতা একসাথে; প্রতিটি স্ল্যাগ ধরে
+ * আলাদা ডাকা অসম্ভব, শত শত পাতা আছে।
+ */
+function revalidateAdSurfaces() {
+  revalidatePath('/');
+  revalidatePath('/news/[slug]', 'page');
+  revalidatePath('/category/[category]', 'page');
+  revalidatePath('/admin/ads');
+}
+
+const ALLOWED_AD_TYPES = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+};
+const MAX_AD_BYTES = 3 * 1024 * 1024;
+
+export async function createAdAction(_prev, formData) {
+  const user = await requirePermission('manageAds');
+
+  const name = String(formData.get('name') ?? '').trim();
+  const placement = String(formData.get('placement') ?? '').trim();
+  const linkUrl = String(formData.get('link_url') ?? '').trim();
+  const alt = String(formData.get('alt') ?? '').trim();
+  const sort = Number(formData.get('sort') ?? 0);
+  const startsAt = String(formData.get('starts_at') ?? '').trim();
+  const endsAt = String(formData.get('ends_at') ?? '').trim();
+  const file = formData.get('image');
+
+  if (!name) return { error: 'বিজ্ঞাপনের একটা নাম দিন' };
+  if (!PLACEMENT_IDS.includes(placement)) return { error: 'জায়গাটি ঠিক নয়' };
+  if (!file || typeof file === 'string' || file.size === 0) {
+    return { error: 'ছবি বাছাই করুন' };
+  }
+  if (file.size > MAX_AD_BYTES) {
+    return { error: `ছবিটি বড় (${Math.round(file.size / 1024)} KB) — সর্বোচ্চ ৩ MB` };
+  }
+
+  const ext = ALLOWED_AD_TYPES[file.type];
+  if (!ext) return { error: 'কেবল GIF, PNG, WebP বা JPG চলবে' };
+
+  // লিংক থাকলে সেটি http/https কি না দেখে নিই। javascript: বসিয়ে দিলে
+  // /go রুট সেটি আটকাত, কিন্তু ভুলটা এখানেই ধরা পড়া ভালো — নাহলে
+  // বিজ্ঞাপন বসানোর পর নীরবে হোমপেজে ফেরত পাঠাত, কেউ বুঝত না কেন।
+  if (linkUrl) {
+    try {
+      const u = new URL(linkUrl);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') throw new Error();
+    } catch {
+      return { error: 'লিংকটি http:// বা https:// দিয়ে শুরু হতে হবে' };
+    }
+  }
+
+  if (startsAt && endsAt && new Date(startsAt) > new Date(endsAt)) {
+    return { error: 'শুরুর তারিখ শেষের তারিখের পরে হতে পারে না' };
+  }
+
+  // ফাইলের নাম আমরা নিজেরাই বানাই, আপলোডকারীর দেওয়া নাম ব্যবহার করি না —
+  // বাংলা বা ফাঁকাযুক্ত নামে Storage আপত্তি করে, আর একই নামের দুটো
+  // ফাইল একে অন্যকে মুছে দিত।
+  const objectName = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
+
+  try {
+    const url = await uploadAdImage(objectName, file);
+    await adminQuery('ads', {
+      method: 'POST',
+      prefer: 'return=minimal',
+      body: [
+        {
+          name,
+          placement,
+          image_url: url,
+          link_url: linkUrl || null,
+          alt: alt || null,
+          sort: Number.isFinite(sort) ? sort : 0,
+          starts_at: startsAt || null,
+          ends_at: endsAt || null,
+          created_by: user.email,
+        },
+      ],
+    });
+  } catch (err) {
+    return { error: err.message };
+  }
+
+  await logAction(user.email, 'ad', name, { action: 'create', placement });
+  revalidateAdSurfaces();
+  return { ok: true };
+}
+
+/** Supabase Storage-এ আপলোড করে পাবলিক URL ফেরত দেয় */
+async function uploadAdImage(objectName, file) {
+  const base = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!base || !key) throw new Error('SUPABASE_URL / SUPABASE_SERVICE_KEY সেট নেই');
+
+  const res = await fetch(`${base}/storage/v1/object/ads/${objectName}`, {
+    method: 'POST',
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      'Content-Type': file.type,
+      'cache-control': 'public, max-age=31536000, immutable',
+    },
+    body: Buffer.from(await file.arrayBuffer()),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    if (/bucket not found/i.test(text)) {
+      throw new Error('Storage-এ "ads" বাকেট নেই — pipeline-এ node test/setup-buckets.mjs চালান');
+    }
+    throw new Error(`ছবি আপলোড হয়নি (${res.status}) ${text.slice(0, 120)}`);
+  }
+
+  return `${base}/storage/v1/object/public/ads/${objectName}`;
+}
+
+export async function toggleAdAction(id, active) {
+  const user = await requirePermission('manageAds');
+
+  await adminQuery(`ads?id=eq.${Number(id)}`, {
+    method: 'PATCH',
+    prefer: 'return=minimal',
+    body: { active },
+  });
+
+  await logAction(user.email, 'ad', String(id), { action: active ? 'activate' : 'deactivate' });
+  revalidateAdSurfaces();
+}
+
+export async function deleteAdAction(id) {
+  const user = await requirePermission('manageAds');
+
+  // Storage থেকে ছবিটাও মুছি — নাহলে বাতিল বিজ্ঞাপনের ছবি বছরের পর
+  // বছর জমতে থাকত, আর সেগুলোর পাবলিক URL খোলাই থেকে যেত।
+  try {
+    const rows = await adminQuery(`ads?select=image_url&id=eq.${Number(id)}&limit=1`);
+    const url = rows?.[0]?.image_url ?? '';
+    const objectName = url.split('/storage/v1/object/public/ads/')[1];
+    if (objectName) {
+      const base = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
+      await fetch(`${base}/storage/v1/object/ads/${objectName}`, {
+        method: 'DELETE',
+        headers: {
+          apikey: process.env.SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
+        },
+      });
+    }
+  } catch {
+    // ছবি মুছতে না পারলেও সারিটা মোছা হোক — নাহলে বিজ্ঞাপন দেখাতেই থাকত
+  }
+
+  await adminQuery(`ads?id=eq.${Number(id)}`, { method: 'DELETE', prefer: 'return=minimal' });
+
+  await logAction(user.email, 'ad', String(id), { action: 'delete' });
+  revalidateAdSurfaces();
 }
 
 // ---------------------------------------------------------------

@@ -297,6 +297,37 @@ h1, h2, h3 { overflow-wrap: break-word; }
   .sec-head h2 { font-size: 1.16rem; }
 }
 
+/* ---------- বিজ্ঞাপন ---------- */
+/*
+  "বিজ্ঞাপন" লেখাটি ইচ্ছাকৃত, এবং আইনত নিরাপদও। বিজ্ঞাপনকে খবরের
+  মতো দেখালে পাঠক প্রতারিত বোধ করেন, আর AdSense-এর নীতিতেও সেটি
+  নিষিদ্ধ — অনুমোদন বাতিল হতে পারে।
+*/
+.ad-slot {
+  margin: 26px auto;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.ad-label {
+  font-size: .68rem; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--muted); opacity: .75; align-self: flex-start;
+}
+.ad-img { display: block; max-width: 100%; line-height: 0; }
+/*
+  ছবির উচ্চতা আগে থেকে জানা নেই (বিজ্ঞাপনদাতা যেকোনো মাপ দিতে পারেন),
+  তাই max-height দিয়ে বেঁধে রাখা — নাহলে একটা লম্বা ছবি গোটা পর্দা
+  দখল করে খবরকে নিচে ঠেলে দিত।
+*/
+.ad-img img {
+  max-width: 100%; height: auto; display: block;
+  border-radius: 8px; border: 1px solid var(--line);
+}
+.ad-header_top, .ad-footer { margin: 18px auto; }
+.ad-header_top .ad-img img, .ad-footer .ad-img img { max-height: 160px; }
+.ad-sidebar { margin: 14px 0 0; }
+.ad-sidebar .ad-img img { width: 100%; }
+/* AdSense-এর <ins> — জায়গা না পেলে Google কিছুই আঁকে না */
+.ad-slot .adsbygoogle { display: block; width: 100%; min-height: 90px; }
+
 /* ---------- আর্টিকেল পেজ ---------- */
 .article { max-width: 760px; margin: 0 auto; padding: 34px 0 60px; }
 .article h1 { font-size: 2.15rem; line-height: 1.5; margin: 12px 0 16px; }
